@@ -1,0 +1,8 @@
+# Local AI agent tooling
+.agents/
+.opencode/
+.claude/
+.cursor/
+AGENTS.md
+CLAUDE.md
+skills-lock.json
