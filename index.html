@@ -41,8 +41,12 @@
         .agenda-dot.kind-interview { background: #c2410c; }
         .agenda-dot.kind-registration { background: #0369a1; }
         .agenda-dot.kind-deadline { background: #b91c1c; }
+        #listView { position: relative; isolation: isolate; overflow: hidden; border-radius: 1.5rem; }
+        #listView::before { content: ''; position: absolute; z-index: 0; top: clamp(2rem, 7vw, 6rem); left: 50%; width: min(78vw, 52rem); aspect-ratio: 1; transform: translateX(-50%); background: url('data/usm-crest.webp') center / contain no-repeat; opacity: 0.055; pointer-events: none; }
+        #eventGrid { position: relative; z-index: 1; }
         @media (max-width: 767px) {
             .calendar-scroll { margin-right: -1rem; padding-right: 1rem; }
+            #listView::before { top: 4rem; width: 110vw; opacity: 0.04; }
         }
     </style>
 </head>
