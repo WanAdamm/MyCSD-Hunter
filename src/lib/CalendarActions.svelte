@@ -18,7 +18,7 @@
 </script>
 
 <nav class:compact class="calendar-actions" aria-label={`Add ${event.title} to a calendar`}>
-  <span>Add to</span>
+  <span>Add to calendar</span>
   <a href={googleUrl} target="_blank" rel="noreferrer">Google</a>
   <button type="button" onclick={downloadAppleCalendar}>Apple</button>
 </nav>

@@ -32,7 +32,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .brand-mark { display: grid; width: 2.25rem; height: 2.25rem; place-items: center; border-radius: .55rem; color: var(--orange); background: white; }
 .brand-mark svg { width: 1.45rem; stroke: currentColor; stroke-width: 1.8; }
 .source-label { font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .72; }
-.hero { max-width: 980px; margin: auto; padding: clamp(4rem, 9vw, 7.5rem) 1.5rem clamp(5rem, 10vw, 8rem); }
+.hero { max-width: 980px; margin: auto; padding: 4rem 1.5rem 5rem; }
 .eyebrow, .section-kicker { margin: 0 0 1rem; color: var(--orange); font-size: .73rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
 .hero h1 { max-width: 850px; margin: 0; font-family: 'Fraunces', serif; font-size: clamp(3.25rem, 8vw, 6.8rem); line-height: .92; letter-spacing: -.055em; }
 .hero h1 em { color: #ffb17f; font-style: normal; }
