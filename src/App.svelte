@@ -13,6 +13,9 @@
   let activeView = $state("list");
   const baseUrl = import.meta.env.BASE_URL;
 
+  const PAGE_SIZE = 20;
+  let currentPage = $state(1);
+
   const categories = $derived(
     [...new Set(events.map((event) => event.type).filter(Boolean))].sort(),
   );
@@ -31,6 +34,16 @@
       );
     }),
   );
+  const totalPages = $derived(Math.max(1, Math.ceil(filteredEvents.length / PAGE_SIZE)));
+  const activePage = $derived(Math.min(currentPage, totalPages));
+  const displayedEvents = $derived(
+    filteredEvents.slice((activePage - 1) * PAGE_SIZE, activePage * PAGE_SIZE),
+  );
+
+  function goToPage(page) {
+    currentPage = Math.max(1, Math.min(page, totalPages));
+    document.getElementById("view-heading")?.scrollIntoView({ behavior: "smooth" });
+  }
 
   onMount(async () => {
     try {
@@ -52,6 +65,7 @@
     category = "all";
     mycsdOnly = false;
     feeFilter = "all";
+    currentPage = 1;
   }
 </script>
 
@@ -131,8 +145,12 @@
         </h2>
         {#if !loading && !error}
           <p class="result-count" aria-live="polite">
-            {filteredEvents.length}
-            {filteredEvents.length === 1 ? "event" : "events"} found
+            {#if activeView === "list" && filteredEvents.length > 0}
+              Showing {(activePage - 1) * PAGE_SIZE + 1}–{Math.min(activePage * PAGE_SIZE, filteredEvents.length)} of {filteredEvents.length} events
+            {:else}
+              {filteredEvents.length}
+              {filteredEvents.length === 1 ? "event" : "events"} found
+            {/if}
           </p>
         {/if}
       </div>
@@ -171,10 +189,45 @@
         <button onclick={clearFilters}>Clear filters</button>
       </div>
     {:else if activeView === "list"}
-      <div class="event-grid" role="tabpanel" aria-label="Event list">
-        {#each filteredEvents as event (event.id)}
-          <EventCard {event} />
-        {/each}
+      <div class="list-view-container" role="tabpanel" aria-label="Event list">
+        <div class="event-grid">
+          {#each displayedEvents as event (event.id)}
+            <EventCard {event} />
+          {/each}
+        </div>
+        {#if totalPages > 1}
+          <nav class="pagination" aria-label="Event list pagination">
+            <button
+              class="page-btn nav-btn"
+              disabled={activePage === 1}
+              onclick={() => goToPage(activePage - 1)}
+              aria-label="Previous page"
+            >
+              &larr; Prev
+            </button>
+            <div class="page-numbers">
+              {#each Array.from({ length: totalPages }, (_, i) => i + 1) as page}
+                <button
+                  class="page-btn num-btn"
+                  class:active={page === activePage}
+                  onclick={() => goToPage(page)}
+                  aria-label={`Page ${page}`}
+                  aria-current={page === activePage ? "page" : undefined}
+                >
+                  {page}
+                </button>
+              {/each}
+            </div>
+            <button
+              class="page-btn nav-btn"
+              disabled={activePage === totalPages}
+              onclick={() => goToPage(activePage + 1)}
+              aria-label="Next page"
+            >
+              Next &rarr;
+            </button>
+          </nav>
+        {/if}
       </div>
     {:else}
       <div role="tabpanel" aria-label="Event calendar">
