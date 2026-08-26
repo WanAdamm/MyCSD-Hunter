@@ -6,3 +6,22 @@
 AGENTS.md
 CLAUDE.md
 skills-lock.json
+
+# Dependencies and generated builds
+node_modules/
+dist/
+public/events.json
+public/assets/
+
+# Local database files
+data/*.sqlite*
+
+# Logs and local environment
+*.log
+.env
+.env.*
+!.env.example
+
+# Operating system files
+.DS_Store
+Thumbs.db
