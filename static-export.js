@@ -24,6 +24,7 @@ const output = events
     interview_platform: event.platform,
     time: event.timeText,
     mycsd_provided: event.mycsdProvided,
+    fee: event.fee,
     source_url: event.sourceUrl,
     calendar_entries: event.schedules.map(item => ({
       label: item.label,

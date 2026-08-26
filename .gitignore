@@ -23,6 +23,28 @@ data/*.sqlite*
 .env.*
 !.env.example
 
-# Operating system files
+# Operating system files — macOS
 .DS_Store
+
+# Operating system files — Windows
 Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.lnk
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# OneDrive temp files
+~$*
+
+# Editor / IDE
+.vscode/
+*.code-workspace
+.idea/
+
+# Gemini / Antigravity agent tooling
+.gemini/

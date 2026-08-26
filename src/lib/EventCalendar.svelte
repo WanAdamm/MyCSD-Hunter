@@ -9,7 +9,14 @@
   let cursor = $state(new Date(today));
   let selected = $state(new Date(today));
 
-  const items = $derived(events.flatMap(event => (event.calendar_entries || []).map((entry, index) => ({ ...entry, event, scheduleIndex: index, id: `${event.id}-${index}` }))));
+  const items = $derived(events.flatMap(event => (event.calendar_entries || []).flatMap((entry, index) => {
+    const base = { ...entry, event, scheduleIndex: index };
+    if (entry.start === entry.end) return [{ ...base, id: `${event.id}-${index}`, displayLabel: entry.label }];
+    return [
+      { ...base, start: entry.start, end: entry.start, id: `${event.id}-${index}-open`, displayLabel: `${entry.label} opens` },
+      { ...base, start: entry.end, end: entry.end, id: `${event.id}-${index}-close`, displayLabel: `${entry.label} closes` }
+    ];
+  })));
   const period = $derived(getPeriod(cursor, mode));
   const weeks = $derived(makeWeeks(period.start, period.end));
   const selectedKey = $derived(toKey(selected));
@@ -184,8 +191,8 @@
             class={`calendar-entry ${item.kind}`}
             style={`grid-column: ${item.column} / span ${item.span}; grid-row: ${item.lane + 2}`}
             onclick={() => selectDate(parseDate(item.start < toKey(weekStart) ? toKey(weekStart) : item.start))}
-            title={`${item.label}: ${item.event.title}`}
-          >{item.label}: {item.event.title}</button>
+            title={`${item.displayLabel}: ${item.event.title}`}
+          >{item.displayLabel}: {item.event.title}</button>
         {/each}
       </div>
     {/each}
@@ -204,7 +211,7 @@
       {#each agenda as item (item.id)}
         <article>
           <i class={item.kind}></i>
-          <div><small>{item.label} | {formatRange(item)}</small><h4>{item.event.title}</h4><p>{item.event.type}</p></div>
+          <div><small>{item.displayLabel} | {formatRange(item)}</small><h4>{item.event.title}</h4><p>{item.event.type} · {#if item.event.fee?.free === true}<span class="fee-badge free">Free</span>{:else if item.event.fee?.amount}<span class="fee-badge paid">{item.event.fee.amount}</span>{:else}<span class="fee-badge not-stated">Fee not stated</span>{/if}</p></div>
           <nav class="agenda-item-actions" aria-label={`Actions for ${item.event.title}`}>
             <CalendarActions event={item.event} schedule={item} index={item.scheduleIndex} compact />
             {#if safeUrl(item.event.registration_link || item.event.source_url)}

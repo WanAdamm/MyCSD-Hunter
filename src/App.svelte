@@ -9,6 +9,7 @@
   let search = $state("");
   let category = $state("all");
   let mycsdOnly = $state(false);
+  let feeFilter = $state("all");
   let activeView = $state("list");
   const baseUrl = import.meta.env.BASE_URL;
 
@@ -23,7 +24,10 @@
       return (
         searchable.includes(query) &&
         (category === "all" || event.type === category) &&
-        (!mycsdOnly || event.mycsd_provided)
+        (!mycsdOnly || event.mycsd_provided) &&
+        (feeFilter === "all" ||
+          (feeFilter === "free" && event.fee?.free === true) ||
+          (feeFilter === "paid" && event.fee?.free === false))
       );
     }),
   );
@@ -47,6 +51,7 @@
     search = "";
     category = "all";
     mycsdOnly = false;
+    feeFilter = "all";
   }
 </script>
 
@@ -101,6 +106,14 @@
         {#each categories as item}
           <option value={item}>{item}</option>
         {/each}
+      </select>
+    </label>
+    <label class="select-field">
+      <span class="sr-only">Filter by fee</span>
+      <select bind:value={feeFilter}>
+        <option value="all">All fees</option>
+        <option value="free">Free only</option>
+        <option value="paid">Paid only</option>
       </select>
     </label>
     <label class="check-field">

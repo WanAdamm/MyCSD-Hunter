@@ -8,6 +8,7 @@
   const initials = $derived(displayTitle.split(/\s+/).filter(word => /^[A-Za-z0-9]/.test(word)).slice(0, 3).map(word => word[0]).join('').toUpperCase());
   const summary = $derived(event.description?.replace(/\s+/g, ' ').slice(0, 190) || 'No description was extracted.');
   const primarySchedule = $derived(event.calendar_entries?.[0]);
+  const feeLabel = $derived(event.fee?.free === true ? 'Free' : event.fee?.amount || 'Fee not stated');
   const actionUrl = $derived(safeUrl(event.registration_link) || safeUrl(event.source_url));
   const actionLabel = $derived(safeUrl(event.registration_link) ? 'Open registration' : 'View Telegram post');
 
@@ -57,6 +58,12 @@
       <p class="organizer">{event.organization}</p>
     {/if}
     <p class="description">{summary}{event.description?.replace(/\s+/g, ' ').length > 190 ? '...' : ''}</p>
+    <div class="fee-block">
+      <span class="fee-icon" class:free={event.fee?.free === true} class:paid={event.fee?.free === false} class:not-stated={event.fee?.free == null} aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2m0 4v2m0 4v2"/></svg>
+      </span>
+      <span><small>Fee</small>{feeLabel}</span>
+    </div>
     <div class="schedule">
       <span class="date-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none"><path d="M7 3v4m10-4v4M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/></svg>

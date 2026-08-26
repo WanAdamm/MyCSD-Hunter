@@ -208,6 +208,23 @@ function extractField(body, labels) {
   return cleanText(body).match(expression)?.[1]?.trim() || null;
 }
 
+function extractFee(body) {
+  const text = cleanText(body);
+  const freePattern = /\bfree\s+(?:entry|registration|admission|access)\b|(?:^|\W)percuma(?:\W|$)|\bno\s+(?:registration\s+)?fee\b|\bfree\b\s*[!🆓\n]/im;
+  const amountPattern = /\bRM\s*(\d+(?:\.\d{1,2})?)\b/i;
+  const labelledFree = /(?:fee|yuran|admission|harga|registration fee)\s*[:：]\s*(?:free|percuma)/im;
+  const falsePositiveFree = /\bfeel\s+free\b|\bfree\s+to\s+(?:contact|reach|ask|join|message)\b/i;
+
+  if (labelledFree.test(text)) return { free: true, amount: null };
+
+  const amountMatch = text.match(amountPattern);
+  if (amountMatch) return { free: false, amount: `RM${amountMatch[1]}` };
+
+  if (freePattern.test(text) && !falsePositiveFree.test(text)) return { free: true, amount: null };
+
+  return { free: null, amount: null };
+}
+
 function dedupeKey(event, body) {
   const value = event.registrationLink
     ? event.registrationLink.toLowerCase().replace(/[?#].*$/, '')
@@ -230,6 +247,7 @@ export function parseEvent(message) {
     platform: extractField(body, 'platform'),
     timeText: extractField(body, 'masa|time'),
     mycsdProvided: /my\s*csd/i.test(body),
+    fee: extractFee(body),
     schedules: extractSchedules(body, message.postedAt),
     contacts: extractContacts(body),
     sourceUrl: `https://t.me/mycsd/${message.telegramMessageId}`
