@@ -41,7 +41,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .hero-rule span { display: block; width: 34%; height: 100%; background: var(--orange); }
 
 main { max-width: 1200px; min-height: 55vh; margin: auto; padding: 0 1.5rem 5rem; }
-.filter-panel { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr 15rem auto; gap: .8rem; align-items: center; margin-top: -2.2rem; padding: .8rem; border: 1px solid rgb(68 0 153 / .08); border-radius: 1rem; background: white; box-shadow: 0 18px 50px rgb(39 18 61 / .14); }
+.filter-panel { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr 12rem 9rem auto; gap: .8rem; align-items: center; margin-top: -2.2rem; padding: .8rem; border: 1px solid rgb(68 0 153 / .08); border-radius: 1rem; background: white; box-shadow: 0 18px 50px rgb(39 18 61 / .14); }
 .search-field { position: relative; display: block; }
 .search-field svg { position: absolute; top: 50%; left: 1rem; width: 1.2rem; transform: translateY(-50%); stroke: #8d8495; stroke-width: 1.8; }
 .filter-panel input[type='search'], .filter-panel select { width: 100%; height: 3rem; border: 1px solid var(--line); border-radius: .65rem; color: var(--ink); background: #fbfafc; }
@@ -76,6 +76,9 @@ main { max-width: 1200px; min-height: 55vh; margin: auto; padding: 0 1.5rem 5rem
 .mycsd-badge { right: .85rem; bottom: .85rem; padding: .4rem .65rem; border-radius: .38rem; background: var(--orange); }
 .card-body { display: flex; flex: 1; flex-direction: column; padding: 1.3rem; }
 .category { margin: 0 0 .65rem; color: var(--purple); font-size: .67rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.fee-badge { display: inline-block; margin-left: .55rem; padding: .15rem .5rem; border-radius: 999px; font-size: .6rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; vertical-align: middle; color: #92400e; background: #fef3c7; }
+.fee-badge.free { color: #065f46; background: #d1fae5; }
+.fee-badge.not-stated { color: var(--muted); background: #f3f0f5; }
 .card-body h3 { margin: 0; color: var(--ink); font-family: 'Fraunces', serif; font-size: 1.35rem; line-height: 1.18; letter-spacing: -.025em; }
 .organizer { margin: .55rem 0 0; color: var(--purple); font-size: .78rem; font-weight: 700; line-height: 1.4; }
 .description { flex: 1; margin: 1rem 0 1.25rem; color: var(--muted); font-size: .86rem; line-height: 1.65; }
@@ -151,7 +154,7 @@ footer > a { color: white; font-size: .8rem; font-weight: 700; }
 
 @media (max-width: 900px) {
   .event-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .filter-panel { grid-template-columns: 1fr 12rem; }
+  .filter-panel { grid-template-columns: 1fr 10rem 9rem; }
   .check-field { grid-column: 1 / -1; padding: .25rem .5rem; }
 }
 

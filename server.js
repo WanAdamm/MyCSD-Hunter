@@ -28,6 +28,8 @@ db.exec(`
     platform TEXT,
     time_text TEXT,
     mycsd_provided INTEGER NOT NULL DEFAULT 0,
+    fee_free INTEGER,
+    fee_amount TEXT,
     source_url TEXT NOT NULL
   );
   CREATE TABLE IF NOT EXISTS source_messages (
@@ -63,8 +65,8 @@ function importMessages() {
   const insertEvent = db.prepare(`
     INSERT INTO events (
       dedupe_key, telegram_message_id, posted_at, title, organizer, category, description,
-      registration_link, venue, platform, time_text, mycsd_provided, source_url
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      registration_link, venue, platform, time_text, mycsd_provided, fee_free, fee_amount, source_url
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const insertSource = db.prepare(`
     INSERT INTO source_messages (telegram_message_id, posted_at, sender_id, media_type, raw_text, event_id)
@@ -84,7 +86,7 @@ function importMessages() {
       const result = insertEvent.run(
         event.dedupeKey, event.telegramMessageId, event.postedAt, event.title, event.organizer,
         event.category, event.description, event.registrationLink, event.venue, event.platform,
-        event.timeText, Number(event.mycsdProvided), event.sourceUrl
+        event.timeText, Number(event.mycsdProvided), event.fee.free === null ? null : Number(event.fee.free), event.fee.amount, event.sourceUrl
       );
       const eventId = Number(result.lastInsertRowid);
       eventIds.set(event.dedupeKey, eventId);
@@ -123,6 +125,10 @@ function getEvents() {
     interview_platform: event.platform,
     time: event.time_text,
     mycsd_provided: Boolean(event.mycsd_provided),
+    fee: {
+      free: event.fee_free === null ? null : Boolean(event.fee_free),
+      amount: event.fee_amount
+    },
     source_url: event.source_url,
     calendar_entries: schedules.filter(item => item.event_id === event.id).map(item => ({
       label: item.label,

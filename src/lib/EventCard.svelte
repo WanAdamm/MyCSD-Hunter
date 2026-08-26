@@ -8,6 +8,7 @@
   const initials = $derived(displayTitle.split(/\s+/).filter(word => /^[A-Za-z0-9]/.test(word)).slice(0, 3).map(word => word[0]).join('').toUpperCase());
   const summary = $derived(event.description?.replace(/\s+/g, ' ').slice(0, 190) || 'No description was extracted.');
   const primarySchedule = $derived(event.calendar_entries?.[0]);
+  const feeLabel = $derived(event.fee?.free === true ? 'Free' : event.fee?.amount || 'Fee not stated');
   const actionUrl = $derived(safeUrl(event.registration_link) || safeUrl(event.source_url));
   const actionLabel = $derived(safeUrl(event.registration_link) ? 'Open registration' : 'View Telegram post');
 
@@ -51,7 +52,10 @@
     {#if event.mycsd_provided}<span class="mycsd-badge">MyCSD</span>{/if}
   </div>
   <div class="card-body">
-    <p class="category">{event.type || 'Programme'}</p>
+    <p class="category">
+      {event.type || 'Programme'}
+      <span class="fee-badge" class:free={event.fee?.free} class:not-stated={event.fee?.free == null}>{feeLabel}</span>
+    </p>
     <h3>{displayTitle}</h3>
     {#if event.organization && event.organization !== displayTitle}
       <p class="organizer">{event.organization}</p>
