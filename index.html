@@ -44,6 +44,28 @@
         #listView { position: relative; isolation: isolate; overflow: hidden; border-radius: 1.5rem; }
         #listView::before { content: ''; position: absolute; z-index: 0; top: clamp(2rem, 7vw, 6rem); left: 50%; width: min(78vw, 52rem); aspect-ratio: 1; transform: translateX(-50%); background: url('data/usm-crest.webp') center / contain no-repeat; opacity: 0.055; pointer-events: none; }
         #eventGrid { position: relative; z-index: 1; }
+        .event-card { position: relative; overflow: hidden; border: 1px solid #e5e7eb; border-radius: 1rem; background: white; box-shadow: 0 10px 30px rgb(68 0 153 / 0.07); transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease; }
+        .event-card:hover { transform: translateY(-4px); border-color: rgb(68 0 153 / 0.22); box-shadow: 0 18px 38px rgb(68 0 153 / 0.13); }
+        .event-card.has-mycsd { border-top: 4px solid #f26722; }
+        .event-card-visual { position: relative; height: 9.5rem; overflow: hidden; background: linear-gradient(135deg, #26005e 0%, #440099 58%, #6824b4 100%); color: white; }
+        .event-card-visual::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to top, rgb(30 0 68 / 0.78), transparent 68%); pointer-events: none; }
+        .event-card-poster { width: 100%; height: 100%; object-fit: cover; object-position: top; transition: transform 400ms ease; }
+        .event-card:hover .event-card-poster { transform: scale(1.035); }
+        .event-card-crest { position: absolute; top: 50%; right: -1rem; width: 9.5rem; transform: translateY(-50%) rotate(7deg); opacity: 0.11; }
+        .event-card-monogram { position: absolute; left: 1.25rem; bottom: 0.75rem; z-index: 1; max-width: calc(100% - 2.5rem); overflow: hidden; color: rgb(255 255 255 / 0.18); font-size: 4rem; font-weight: 900; line-height: 0.85; letter-spacing: -0.08em; white-space: nowrap; }
+        .event-card-posted { position: absolute; z-index: 2; top: 1rem; left: 1rem; padding: 0.35rem 0.65rem; border: 1px solid rgb(255 255 255 / 0.24); border-radius: 9999px; background: rgb(24 0 57 / 0.42); color: white; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; backdrop-filter: blur(7px); }
+        .event-card-myscd { position: absolute; z-index: 2; right: 1rem; bottom: 1rem; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.7rem; border-radius: 0.45rem; background: #f26722; color: white; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.05em; box-shadow: 0 4px 12px rgb(0 0 0 / 0.18); }
+        .event-card-myscd::before { content: ''; width: 0.4rem; height: 0.4rem; border-radius: 9999px; background: white; box-shadow: 0 0 0 3px rgb(255 255 255 / 0.22); }
+        .event-card-schedule { display: grid; grid-template-columns: auto 1fr; gap: 0.75rem; align-items: start; padding: 0.85rem; border: 1px solid #e9ddf7; border-radius: 0.75rem; background: #faf7ff; }
+        .event-card-action { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; padding: 0.8rem 1rem; border-radius: 0.7rem; background: #440099; color: white; font-size: 0.875rem; font-weight: 800; transition: background 160ms ease; }
+        .event-card-action:hover { background: #2f006c; }
+        .event-card-action:focus-visible { outline: 3px solid rgb(242 103 34 / 0.45); outline-offset: 2px; }
+        .event-card-action.is-disabled { justify-content: center; background: #f3f4f6; color: #6b7280; }
+        @media (prefers-reduced-motion: reduce) {
+            .event-card, .event-card-poster { transition: none; }
+            .event-card:hover { transform: none; }
+            .event-card:hover .event-card-poster { transform: none; }
+        }
         @media (max-width: 767px) {
             .calendar-scroll { margin-right: -1rem; padding-right: 1rem; }
             #listView::before { top: 4rem; width: 110vw; opacity: 0.04; }
@@ -58,11 +80,6 @@
                 <svg class="w-8 h-8 text-usm-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                 <h1 class="text-2xl font-bold tracking-tight">MyCSD Hunter</h1>
             </div>
-            <nav class="hidden md:flex space-x-6 items-center">
-                <a href="#" class="hover:text-usm-orange transition-colors font-medium">Events</a>
-                <a href="#" class="hover:text-usm-orange transition-colors font-medium">Leaderboard</a>
-                <a href="#" class="bg-usm-orange text-white px-5 py-2 rounded-full font-semibold hover:bg-orange-600 transition-colors shadow-md">Sign In</a>
-            </nav>
         </div>
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
             <h2 class="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">Secure Your Hostel Placement</h2>
@@ -572,6 +589,7 @@
                 const dates = event.event_dates || event.interview_dates || event.registration_period || event.registration_deadline || 'Dates TBA';
                 const hasMyCSD = event.mycsd_provided === true;
                 const description = event.description ? event.description.substring(0, 120) + (event.description.length > 120 ? '...' : '') : 'No description provided.';
+                const initials = organizer.split(/\s+/).filter(word => /^[A-Za-z0-9]/.test(word)).slice(0, 3).map(word => word[0]).join('').toUpperCase();
                 
                 const linkStr = event.registration_link?.startsWith('http') ? event.registration_link : '';
                 let actionLabel = 'Contact organizer';
@@ -587,31 +605,37 @@
                 }
 
                 const action = linkStr
-                    ? `<a href="${linkStr}" target="_blank" rel="noopener noreferrer" class="block w-full text-center bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-usm-purple font-semibold py-2 px-4 rounded-lg transition-colors">${actionLabel}</a>`
-                    : `<span class="block w-full text-center bg-gray-100 border border-gray-200 text-gray-500 font-semibold py-2 px-4 rounded-lg">${actionLabel}</span>`;
+                    ? `<a href="${linkStr}" target="_blank" rel="noopener noreferrer" class="event-card-action"><span>${actionLabel}</span><svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-6-6 6 6-6 6"></path></svg></a>`
+                    : `<span class="event-card-action is-disabled">${actionLabel}</span>`;
 
                 const card = document.createElement('article');
-                card.className = 'bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-200 flex flex-col h-full overflow-hidden';
+                card.className = `event-card ${hasMyCSD ? 'has-mycsd' : ''} flex h-full flex-col`;
                 
                 card.innerHTML = `
-                    ${event.poster ? `<img src="${event.poster}" alt="${organizer} poster" class="w-full aspect-[4/3] object-cover object-top border-b border-gray-100">` : ''}
-                    <div class="p-6 flex flex-col flex-grow">
-                        <div class="flex justify-between items-start mb-4 gap-2">
-                            <span class="inline-block px-3 py-1 bg-gray-100 text-xs font-semibold text-gray-600 rounded-full">${event.type || 'Event'}</span>
-                            ${hasMyCSD ? '<span class="inline-block px-3 py-1 bg-purple-100 text-xs font-bold text-usm-purple rounded-full whitespace-nowrap border border-purple-200">MyCSD</span>' : ''}
+                    <div class="event-card-visual">
+                        ${event.poster
+                            ? `<img src="${event.poster}" alt="${organizer} poster" class="event-card-poster">`
+                            : `<img src="data/usm-crest.webp" alt="" class="event-card-crest" aria-hidden="true"><span class="event-card-monogram" aria-hidden="true">${initials}</span>`}
+                        <span class="event-card-posted">Posted ${event.date_posted || 'recently'}</span>
+                        ${hasMyCSD ? '<span class="event-card-myscd">MYCSD</span>' : ''}
+                    </div>
+                    <div class="flex flex-grow flex-col p-5">
+                        <div class="mb-3">
+                            <span class="text-xs font-extrabold uppercase tracking-[0.12em] text-usm-purple">${event.type || 'Event'}</span>
                         </div>
-                        
-                        <h4 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">${organizer}</h4>
-                        <p class="text-sm text-gray-600 mb-4 flex-grow">${description}</p>
-                        
-                        <div class="space-y-2 mt-auto">
-                            <div class="flex items-start text-sm text-gray-600">
-                                <svg class="w-5 h-5 mr-2 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                <span>${dates}</span>
+                        <h4 class="mb-2 line-clamp-2 text-xl font-extrabold leading-tight text-gray-950">${organizer}</h4>
+                        <p class="mb-5 flex-grow text-sm leading-6 text-gray-600">${description}</p>
+                        <div class="event-card-schedule mt-auto">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-usm-purple text-white">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </span>
+                            <div class="min-w-0">
+                                <span class="block text-[0.65rem] font-extrabold uppercase tracking-[0.12em] text-usm-purple">When</span>
+                                <span class="mt-0.5 block text-sm font-semibold leading-5 text-gray-700">${dates}</span>
                             </div>
                         </div>
                     </div>
-                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 mt-auto">
+                    <div class="mt-auto px-5 pb-5">
                         ${action}
                     </div>
                 `;
