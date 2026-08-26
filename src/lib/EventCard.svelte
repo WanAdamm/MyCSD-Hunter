@@ -52,15 +52,18 @@
     {#if event.mycsd_provided}<span class="mycsd-badge">MyCSD</span>{/if}
   </div>
   <div class="card-body">
-    <p class="category">
-      {event.type || 'Programme'}
-      <span class="fee-badge" class:free={event.fee?.free} class:not-stated={event.fee?.free == null}>{feeLabel}</span>
-    </p>
+    <p class="category">{event.type || 'Programme'}</p>
     <h3>{displayTitle}</h3>
     {#if event.organization && event.organization !== displayTitle}
       <p class="organizer">{event.organization}</p>
     {/if}
     <p class="description">{summary}{event.description?.replace(/\s+/g, ' ').length > 190 ? '...' : ''}</p>
+    <div class="fee-block">
+      <span class="fee-icon" class:free={event.fee?.free === true} class:paid={event.fee?.free === false} class:not-stated={event.fee?.free == null} aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2m0 4v2m0 4v2"/></svg>
+      </span>
+      <span><small>Fee</small>{feeLabel}</span>
+    </div>
     <div class="schedule">
       <span class="date-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none"><path d="M7 3v4m10-4v4M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/></svg>

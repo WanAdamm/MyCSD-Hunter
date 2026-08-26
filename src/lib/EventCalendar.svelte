@@ -211,7 +211,7 @@
       {#each agenda as item (item.id)}
         <article>
           <i class={item.kind}></i>
-          <div><small>{item.displayLabel} | {formatRange(item)}</small><h4>{item.event.title}</h4><p>{item.event.type} · {#if item.event.fee?.free === true}<span class="fee-badge free">Free</span>{:else if item.event.fee?.amount}<span class="fee-badge">{item.event.fee.amount}</span>{:else}<span class="fee-badge not-stated">Fee not stated</span>{/if}</p></div>
+          <div><small>{item.displayLabel} | {formatRange(item)}</small><h4>{item.event.title}</h4><p>{item.event.type} · {#if item.event.fee?.free === true}<span class="fee-badge free">Free</span>{:else if item.event.fee?.amount}<span class="fee-badge paid">{item.event.fee.amount}</span>{:else}<span class="fee-badge not-stated">Fee not stated</span>{/if}</p></div>
           <nav class="agenda-item-actions" aria-label={`Actions for ${item.event.title}`}>
             <CalendarActions event={item.event} schedule={item} index={item.scheduleIndex} compact />
             {#if safeUrl(item.event.registration_link || item.event.source_url)}
