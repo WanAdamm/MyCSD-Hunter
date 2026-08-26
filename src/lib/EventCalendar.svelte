@@ -1,4 +1,7 @@
 <script>
+  import CalendarActions from './CalendarActions.svelte';
+  import { createAppleSubscriptionUrl, createGoogleSubscriptionUrl } from './calendar.js';
+
   let { events } = $props();
 
   const today = atMidnight(new Date());
@@ -6,11 +9,14 @@
   let cursor = $state(new Date(today));
   let selected = $state(new Date(today));
 
-  const items = $derived(events.flatMap(event => (event.calendar_entries || []).map((entry, index) => ({ ...entry, event, id: `${event.id}-${index}` }))));
+  const items = $derived(events.flatMap(event => (event.calendar_entries || []).map((entry, index) => ({ ...entry, event, scheduleIndex: index, id: `${event.id}-${index}` }))));
   const period = $derived(getPeriod(cursor, mode));
   const weeks = $derived(makeWeeks(period.start, period.end));
   const selectedKey = $derived(toKey(selected));
   const agenda = $derived(items.filter(item => item.start <= selectedKey && item.end >= selectedKey));
+  const feedUrl = new URL(`${import.meta.env.BASE_URL}calendar.ics`, window.location.origin).href;
+  const googleSubscriptionUrl = createGoogleSubscriptionUrl(feedUrl);
+  const appleSubscriptionUrl = createAppleSubscriptionUrl(feedUrl);
 
   function atMidnight(date) {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -132,9 +138,16 @@
     <button onclick={() => movePeriod(1)} aria-label="Next period">&rarr;</button>
     <h3>{period.label}</h3>
   </div>
-  <div class="mode-controls" aria-label="Calendar period">
-    <button class:active={mode === 'month'} onclick={() => setMode('month')} aria-pressed={mode === 'month'}>Month</button>
-    <button class:active={mode === 'week'} onclick={() => setMode('week')} aria-pressed={mode === 'week'}>Week</button>
+  <div class="calendar-toolbar-actions">
+    <div class="mode-controls" aria-label="Calendar period">
+      <button class:active={mode === 'month'} onclick={() => setMode('month')} aria-pressed={mode === 'month'}>Month</button>
+      <button class:active={mode === 'week'} onclick={() => setMode('week')} aria-pressed={mode === 'week'}>Week</button>
+    </div>
+    <nav class="subscription-actions" aria-label="Subscribe to the full calendar">
+      <span>Subscribe</span>
+      <a href={googleSubscriptionUrl} target="_blank" rel="noreferrer">Google</a>
+      <a href={appleSubscriptionUrl}>Apple</a>
+    </nav>
   </div>
 </div>
 
@@ -192,9 +205,12 @@
         <article>
           <i class={item.kind}></i>
           <div><small>{item.label} | {formatRange(item)}</small><h4>{item.event.title}</h4><p>{item.event.type}</p></div>
-          {#if safeUrl(item.event.registration_link || item.event.source_url)}
-            <a href={safeUrl(item.event.registration_link || item.event.source_url)} target="_blank" rel="noreferrer">Details</a>
-          {/if}
+          <nav class="agenda-item-actions" aria-label={`Actions for ${item.event.title}`}>
+            <CalendarActions event={item.event} schedule={item} index={item.scheduleIndex} compact />
+            {#if safeUrl(item.event.registration_link || item.event.source_url)}
+              <a href={safeUrl(item.event.registration_link || item.event.source_url)} target="_blank" rel="noreferrer">Details</a>
+            {/if}
+          </nav>
         </article>
       {/each}
     </div>

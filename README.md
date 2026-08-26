@@ -25,6 +25,14 @@ In the repository settings, select **Settings > Pages > Build and deployment > S
 
 Update `messages.txt`, commit it, and push to publish refreshed events.
 
+## Calendar Export
+
+Each scheduled item can be added directly to Google Calendar or downloaded as an Apple Calendar `.ics` file. The calendar view also provides Google and Apple subscription links for the complete feed:
+
+`https://wanadamm.github.io/MyCSD-Hunter/calendar.ics`
+
+Calendar entries are exported as all-day items because Telegram time formats are inconsistent. Any extracted time and platform details remain available in the calendar description. Subscription updates are controlled by the calendar provider and may take several hours after a new deployment.
+
 ## Optional Backend
 
 To use the SQLite-backed read API locally or on a Node hosting provider:

@@ -60,6 +60,8 @@ main { max-width: 1200px; min-height: 55vh; margin: auto; padding: 0 1.5rem 5rem
 .view-tabs button, .mode-controls button { border: 0; border-radius: .48rem; padding: .65rem 1rem; color: var(--muted); background: transparent; font-size: .85rem; font-weight: 700; cursor: pointer; }
 .view-tabs button.active { color: white; background: var(--purple); }
 .mode-controls button.active { color: var(--purple); background: var(--purple-pale); }
+.subscription-actions { display: flex; align-items: center; gap: .3rem; padding-left: .65rem; border-left: 1px solid var(--line); }
+.subscription-actions span { color: var(--muted); font-size: .62rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
 
 .event-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.35rem; }
 .event-card { position: relative; display: flex; min-width: 0; overflow: hidden; flex-direction: column; border: 1px solid var(--line); border-radius: 1rem; background: var(--paper); box-shadow: 0 10px 30px rgb(68 0 153 / .07); transition: transform 180ms ease, box-shadow 180ms ease; }
@@ -83,6 +85,12 @@ main { max-width: 1200px; min-height: 55vh; margin: auto; padding: 0 1.5rem 5rem
 .date-icon svg { width: 1.05rem; stroke: currentColor; stroke-width: 1.7; }
 .card-action { display: flex; align-items: center; justify-content: space-between; margin: 0 1.3rem 1.3rem; padding: .8rem 1rem; border-radius: .6rem; color: white; background: var(--purple); font-size: .82rem; font-weight: 800; text-decoration: none; transition: background 160ms ease; }
 .card-action:hover { background: var(--purple-dark); }
+.calendar-actions { display: flex; align-items: center; gap: .35rem; margin: 0 1.3rem .7rem; padding: .45rem .5rem .45rem .7rem; border: 1px solid var(--line); border-radius: .55rem; color: var(--muted); background: #faf9fb; font-size: .68rem; font-weight: 700; }
+.calendar-actions > span { margin-right: auto; text-transform: uppercase; letter-spacing: .08em; }
+.calendar-actions a, .calendar-actions button, .subscription-actions a { border: 0; border-radius: .35rem; padding: .38rem .5rem; color: var(--purple); background: var(--purple-pale); font-size: .68rem; font-weight: 800; text-decoration: none; cursor: pointer; }
+.calendar-actions a:hover, .calendar-actions button:hover, .subscription-actions a:hover { color: white; background: var(--purple); }
+.calendar-actions.compact { margin: 0; padding: 0; border: 0; background: transparent; }
+.calendar-actions.compact > span { display: none; }
 
 .status-card { padding: 5rem 1.5rem; border: 1px solid var(--line); border-radius: 1rem; text-align: center; background: white; }
 .status-card h3 { margin: 1rem 0 .35rem; font-family: 'Fraunces', serif; font-size: 1.6rem; }
@@ -92,6 +100,7 @@ main { max-width: 1200px; min-height: 55vh; margin: auto; padding: 0 1.5rem 5rem
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .calendar-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .9rem; border: 1px solid var(--line); border-radius: .8rem; background: white; }
+.calendar-toolbar-actions { display: flex; align-items: center; gap: .65rem; }
 .period-controls { display: flex; align-items: center; gap: .45rem; }
 .period-controls button { min-width: 2.4rem; height: 2.4rem; border: 1px solid var(--line); border-radius: .48rem; color: var(--ink); background: white; font-size: .78rem; font-weight: 700; cursor: pointer; }
 .period-controls h3 { margin: 0 0 0 .6rem; font-family: 'Fraunces', serif; font-size: 1.15rem; }
@@ -133,6 +142,7 @@ main { max-width: 1200px; min-height: 55vh; margin: auto; padding: 0 1.5rem 5rem
 .agenda-list h4 { margin: .2rem 0 0; font-size: .88rem; }
 .agenda-list p { margin: .15rem 0 0; color: var(--muted); font-size: .72rem; }
 .agenda-list a { color: var(--purple); font-size: .73rem; font-weight: 800; text-decoration: none; }
+.agenda-item-actions { display: flex; flex: 0 0 auto; align-items: center; gap: .5rem; margin-left: auto; }
 
 footer { display: flex; align-items: center; justify-content: space-between; gap: 2rem; padding: 2.5rem max(1.5rem, calc((100vw - 1200px) / 2)); color: #ccc1dc; background: var(--purple-dark); }
 footer p { margin: .5rem 0 0; font-size: .78rem; }
@@ -155,11 +165,15 @@ footer > a { color: white; font-size: .8rem; font-weight: 700; }
   .dashboard-heading { align-items: flex-start; flex-direction: column; }
   .event-grid { grid-template-columns: 1fr; }
   .calendar-toolbar { align-items: stretch; flex-direction: column; }
+  .calendar-toolbar-actions { align-items: flex-start; flex-direction: column; }
   .period-controls { flex-wrap: wrap; }
   .period-controls h3 { width: 100%; margin: .35rem 0 0; }
   .mode-controls { align-self: flex-start; }
+  .subscription-actions { padding: 0; border: 0; }
   .calendar-scroll { margin-right: -1rem; border-radius: .8rem 0 0 .8rem; }
   .agenda-heading { align-items: flex-start; flex-direction: column; }
+  .agenda-list article { flex-wrap: wrap; }
+  .agenda-item-actions { width: 100%; margin: .25rem 0 0 1.35rem; }
   footer { align-items: flex-start; flex-direction: column; }
 }
 

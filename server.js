@@ -143,7 +143,7 @@ const ASSETS = new Map([
   ['/assets/usm-crest.webp', join(ROOT, 'data', 'usm-crest.webp')],
   ['/assets/national-public-speaking-competition.png', join(ROOT, 'data', 'national public speaking competition.png')]
 ]);
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.webp': 'image/webp', '.png': 'image/png', '.svg': 'image/svg+xml' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.ics': 'text/calendar; charset=utf-8', '.webp': 'image/webp', '.png': 'image/png', '.svg': 'image/svg+xml' };
 
 function sendFile(response, file) {
   response.writeHead(200, { 'content-type': MIME[extname(file)] || 'application/octet-stream' });

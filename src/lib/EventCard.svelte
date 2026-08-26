@@ -1,4 +1,6 @@
 <script>
+  import CalendarActions from './CalendarActions.svelte';
+
   let { event } = $props();
   const crestUrl = `${import.meta.env.BASE_URL}assets/usm-crest.webp`;
 
@@ -62,6 +64,9 @@
       <span><small>{primarySchedule?.label || 'Schedule'}</small>{formatSchedule(primarySchedule)}</span>
     </div>
   </div>
+  {#if primarySchedule}
+    <CalendarActions {event} schedule={primarySchedule} />
+  {/if}
   {#if actionUrl}
     <a class="card-action" href={actionUrl} target="_blank" rel="noreferrer">
       <span>{actionLabel}</span><span aria-hidden="true">&rarr;</span>

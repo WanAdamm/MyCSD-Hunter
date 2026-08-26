@@ -2,6 +2,7 @@ import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseMessages } from './parser.js';
+import { createIcsCalendar } from './src/lib/calendar.js';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const publicDirectory = join(root, 'public');
@@ -35,6 +36,8 @@ const output = events
 
 mkdirSync(assetsDirectory, { recursive: true });
 writeFileSync(join(publicDirectory, 'events.json'), `${JSON.stringify(output, null, 2)}\n`);
+const calendarItems = output.flatMap(event => event.calendar_entries.map((schedule, index) => ({ event, schedule, index })));
+writeFileSync(join(publicDirectory, 'calendar.ics'), createIcsCalendar(calendarItems));
 copyFileSync(join(root, 'data', 'usm-crest.webp'), join(assetsDirectory, 'usm-crest.webp'));
 
-console.log(`Exported ${output.length} events for the static site.`);
+console.log(`Exported ${output.length} events and ${calendarItems.length} calendar entries for the static site.`);
