@@ -2,7 +2,7 @@
   import { createAppleSubscriptionUrl, createGoogleSubscriptionUrl, createGoogleCalendarUrl, createIcsCalendar, calendarFilename } from './calendar.js';
   import { translations } from './i18n.js';
 
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   let { events, lang = 'en' } = $props();
   const t = $derived(translations[lang]);
 
@@ -13,6 +13,10 @@
   let cursor = $state(new Date(today));
   let selected = $state(new Date(today));
   let isMobile = $state(false);
+  let dateStrip = $state();
+  let datePicker = $state();
+  let pickerMonth = $state(new Date(today.getFullYear(), today.getMonth(), 1));
+  let recyclingDateStrip = false;
 
   const items = $derived(events.flatMap(event => (event.calendar_entries || []).map((entry, index) => ({
     ...entry,
@@ -29,8 +33,10 @@
   const googleSubscriptionUrl = createGoogleSubscriptionUrl(feedUrl);
   const appleSubscriptionUrl = createAppleSubscriptionUrl(feedUrl);
 
-  // Days of the current week for the mobile date-strip
-  const weekDays = $derived(Array.from({ length: 7 }, (_, i) => addDays(startOfWeek(cursor), i)));
+  // Three recycled weeks provide room to scroll before moving the window.
+  const stripDays = $derived(Array.from({ length: 21 }, (_, i) => addDays(startOfWeek(cursor), i - 7)));
+  const pickerDays = $derived(Array.from({ length: 42 }, (_, i) => addDays(startOfWeek(pickerMonth), i)));
+  const pickerMonthLabel = $derived(new Intl.DateTimeFormat(t.locale, { month: 'long', year: 'numeric' }).format(pickerMonth));
 
   function atMidnight(date) {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -68,7 +74,7 @@
     return {
       start: startOfWeek(monthStart),
       end: endOfWeek(monthEnd),
-      label: new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' }).format(monthStart)
+      label: new Intl.DateTimeFormat(t.locale, { month: 'long', year: 'numeric' }).format(monthStart)
     };
   }
 
@@ -115,11 +121,11 @@
 
   function formatDate(date, full = false) {
     if (full) {
-      const weekday = new Intl.DateTimeFormat('en-GB', { weekday: 'long' }).format(date);
-      const short   = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+      const weekday = new Intl.DateTimeFormat(t.locale, { weekday: 'long' }).format(date);
+      const short   = new Intl.DateTimeFormat(t.locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(date);
       return { weekday, short };
     }
-    return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
+    return new Intl.DateTimeFormat(t.locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
   }
 
   function formatRange(item) {
@@ -129,14 +135,15 @@
 
   function selectDate(date) {
     selected = new Date(date);
-    if (mode === 'month' && selected.getMonth() !== cursor.getMonth()) cursor = new Date(selected);
+    if (!isMobile && mode === 'month' && selected.getMonth() !== cursor.getMonth()) cursor = new Date(selected);
   }
 
-  function movePeriod(amount) {
-    cursor = mode === 'month'
+  async function movePeriod(amount) {
+    cursor = !isMobile && mode === 'month'
       ? new Date(cursor.getFullYear(), cursor.getMonth() + amount, 1)
       : addDays(cursor, amount * 7);
     selected = new Date(cursor);
+    if (isMobile) await centerDateStrip();
   }
 
   function setMode(nextMode) {
@@ -144,9 +151,53 @@
     cursor = new Date(selected);
   }
 
-  function goToday() {
+  async function goToday() {
     cursor = new Date(today);
     selected = new Date(today);
+    if (isMobile) await centerDateStrip();
+  }
+
+  function openDatePicker() {
+    pickerMonth = new Date(selected.getFullYear(), selected.getMonth(), 1);
+    datePicker?.showModal();
+  }
+
+  function movePickerMonth(amount) {
+    pickerMonth = new Date(pickerMonth.getFullYear(), pickerMonth.getMonth() + amount, 1);
+  }
+
+  async function pickDate(date) {
+    cursor = new Date(date);
+    selected = new Date(date);
+    datePicker?.close();
+    await centerDateStrip();
+  }
+
+  function stripWeekWidth() {
+    const [first, second] = dateStrip?.children || [];
+    return first && second ? (second.offsetLeft - first.offsetLeft) * 7 : 0;
+  }
+
+  async function centerDateStrip() {
+    await tick();
+    if (dateStrip) dateStrip.scrollLeft = stripWeekWidth();
+  }
+
+  async function recycleDateStrip() {
+    if (recyclingDateStrip || !dateStrip) return;
+    const weekWidth = stripWeekWidth();
+    if (!weekWidth) return;
+
+    const direction = dateStrip.scrollLeft < weekWidth * .5
+      ? -1
+      : dateStrip.scrollLeft > weekWidth * 1.5 ? 1 : 0;
+    if (!direction) return;
+
+    recyclingDateStrip = true;
+    cursor = addDays(cursor, direction * 7);
+    await tick();
+    dateStrip.scrollLeft -= direction * weekWidth;
+    recyclingDateStrip = false;
   }
 
   // Count events on a given date key for the mobile strip dots
@@ -158,7 +209,19 @@
   onMount(() => {
     const mq = window.matchMedia('(max-width: 620px)');
     isMobile = mq.matches;
-    mq.addEventListener('change', e => { isMobile = e.matches; });
+    if (isMobile) centerDateStrip();
+
+    const handleMobileChange = e => {
+      isMobile = e.matches;
+      if (isMobile) centerDateStrip();
+    };
+    mq.addEventListener('change', handleMobileChange);
+    window.addEventListener('resize', centerDateStrip);
+
+    return () => {
+      mq.removeEventListener('change', handleMobileChange);
+      window.removeEventListener('resize', centerDateStrip);
+    };
   });
 
   function safeUrl(value) {
@@ -184,11 +247,21 @@
 </script>
 
 <div class="calendar-toolbar">
-  <div class="period-controls">
-    <button onclick={() => movePeriod(-1)} aria-label="Previous period">&larr;</button>
-    <button onclick={goToday}>{t.today}</button>
-    <button onclick={() => movePeriod(1)} aria-label="Next period">&rarr;</button>
-    <h3>{period.label}</h3>
+  <div class="period-controls" class:mobile-period-controls={isMobile}>
+    {#if isMobile}
+      <button class="mobile-date-trigger" onclick={openDatePicker} aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
+        </svg>
+        <span><small>{t.chooseDate}</small><strong>{period.label}</strong></span>
+      </button>
+      <button class="mobile-today" onclick={goToday}>{t.today}</button>
+    {:else}
+      <button onclick={() => movePeriod(-1)} aria-label="Previous period">&larr;</button>
+      <button onclick={goToday}>{t.today}</button>
+      <button onclick={() => movePeriod(1)} aria-label="Next period">&rarr;</button>
+      <h3>{period.label}</h3>
+    {/if}
   </div>
   <div class="calendar-toolbar-actions">
     {#if !isMobile}
@@ -205,6 +278,50 @@
   </div>
 </div>
 
+{#if isMobile}
+  <dialog
+    class="date-picker"
+    bind:this={datePicker}
+    aria-labelledby="date-picker-heading"
+    onclick={event => { if (event.target === datePicker) datePicker.close(); }}
+  >
+    <div class="date-picker-sheet">
+      <span class="date-picker-handle" aria-hidden="true"></span>
+      <header class="date-picker-heading">
+        <div>
+          <span>{t.chooseDate}</span>
+          <h3 id="date-picker-heading">{pickerMonthLabel}</h3>
+        </div>
+        <button class="date-picker-close" onclick={() => datePicker.close()} aria-label={t.closeDatePicker}>&times;</button>
+      </header>
+      <div class="date-picker-nav">
+        <button onclick={() => movePickerMonth(-1)} aria-label={t.previousMonth}>&larr;</button>
+        <button onclick={() => pickDate(today)}>{t.today}</button>
+        <button onclick={() => movePickerMonth(1)} aria-label={t.nextMonth}>&rarr;</button>
+      </div>
+      <div class="date-picker-weekdays" aria-hidden="true">
+        {#each t.weekdays as day}<span>{day.slice(0, 2)}</span>{/each}
+      </div>
+      <div class="date-picker-grid" role="group" aria-label={t.chooseDate}>
+        {#each pickerDays as date (toKey(date))}
+          {@const count = eventCountOn(date)}
+          <button
+            class:outside={date.getMonth() !== pickerMonth.getMonth()}
+            class:today={toKey(date) === toKey(today)}
+            class:selected={toKey(date) === selectedKey}
+            onclick={() => pickDate(date)}
+            aria-label={formatDate(date)}
+            aria-pressed={toKey(date) === selectedKey}
+          >
+            <span>{date.getDate()}</span>
+            {#if count > 0}<i aria-hidden="true"></i>{/if}
+          </button>
+        {/each}
+      </div>
+    </div>
+  </dialog>
+{/if}
+
 <div class="legend" aria-label="Calendar legend">
   <span><i class="event"></i>{t.legendEvent}</span><span><i class="interview"></i>{t.legendInterview}</span>
   <span><i class="registration"></i>{t.legendRegistration}</span><span><i class="deadline"></i>{t.legendDeadline}</span>
@@ -214,8 +331,8 @@
   <div class="calendar-main">
     {#if isMobile}
       <!-- Mobile: compact week date-strip -->
-      <div class="date-strip" role="group" aria-label="Select a day">
-        {#each weekDays as date}
+      <div class="date-strip" role="group" aria-label="Select a day" bind:this={dateStrip} onscroll={recycleDateStrip}>
+        {#each stripDays as date (toKey(date))}
           {@const count = eventCountOn(date)}
           <button
             class="strip-day"
@@ -225,7 +342,7 @@
             aria-label={`Show activities for ${formatDate(date)}`}
             aria-pressed={toKey(date) === selectedKey}
           >
-            <span class="strip-weekday">{new Intl.DateTimeFormat('en-GB', { weekday: 'narrow' }).format(date)}</span>
+            <span class="strip-weekday">{new Intl.DateTimeFormat(t.locale, { weekday: 'narrow' }).format(date)}</span>
             <span class="strip-date">{date.getDate()}</span>
             {#if count > 0}<span class="strip-dot" aria-hidden="true"></span>{/if}
           </button>
