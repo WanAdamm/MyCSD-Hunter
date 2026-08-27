@@ -89,13 +89,9 @@
     <span class="source-label">Sourced from @mycsd</span>
   </nav>
   <div class="hero">
-    <p class="eyebrow">USM opportunity radar</p>
-    <h1>Find the work that<br /><em>earns your place.</em></h1>
-    <p class="hero-copy">
-      Campus programmes, recruitment calls, and activities with MyCSD
-      opportunities, extracted from the channel and arranged around your
-      calendar.
-    </p>
+    <p class="eyebrow">Universiti Sains Malaysia · Pulau Pinang</p>
+    <h1>Your campus,<br /><em>all in one place.</em></h1>
+    <p class="hero-copy">Clubs, events, recruitment, and MyCSD-eligible activities across USM, pulled from the telegram channel and laid out so you never miss a deadline or an opportunity.</p>
     <div class="hero-rule" aria-hidden="true"><span></span></div>
   </div>
 </header>

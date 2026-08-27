@@ -2,12 +2,16 @@
   import CalendarActions from './CalendarActions.svelte';
   import { createAppleSubscriptionUrl, createGoogleSubscriptionUrl } from './calendar.js';
 
+  import { onMount } from 'svelte';
   let { events } = $props();
+
+  const MAX_VISIBLE_LANES = 3;
 
   const today = atMidnight(new Date());
   let mode = $state('month');
   let cursor = $state(new Date(today));
   let selected = $state(new Date(today));
+  let isMobile = $state(false);
 
   const items = $derived(events.flatMap(event => (event.calendar_entries || []).flatMap((entry, index) => {
     const base = { ...entry, event, scheduleIndex: index };
@@ -17,13 +21,16 @@
       { ...base, start: entry.end, end: entry.end, id: `${event.id}-${index}-close`, displayLabel: `${entry.label} closes` }
     ];
   })));
-  const period = $derived(getPeriod(cursor, mode));
+  const period = $derived(getPeriod(cursor, isMobile ? 'week' : mode));
   const weeks = $derived(makeWeeks(period.start, period.end));
   const selectedKey = $derived(toKey(selected));
   const agenda = $derived(items.filter(item => item.start <= selectedKey && item.end >= selectedKey));
   const feedUrl = new URL(`${import.meta.env.BASE_URL}calendar.ics`, window.location.origin).href;
   const googleSubscriptionUrl = createGoogleSubscriptionUrl(feedUrl);
   const appleSubscriptionUrl = createAppleSubscriptionUrl(feedUrl);
+
+  // Days of the current week for the mobile date-strip
+  const weekDays = $derived(Array.from({ length: 7 }, (_, i) => addDays(startOfWeek(cursor), i)));
 
   function atMidnight(date) {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -78,7 +85,7 @@
       .filter(item => item.start <= endKey && item.end >= startKey)
       .sort((a, b) => a.start.localeCompare(b.start) || b.end.localeCompare(a.end));
     const laneEnds = [];
-    return segments.map(item => {
+    const mapped = segments.map(item => {
       let lane = laneEnds.findIndex(end => end < item.start);
       if (lane === -1) lane = laneEnds.length;
       laneEnds[lane] = item.end;
@@ -93,6 +100,16 @@
         continuesRight: item.end > endKey
       };
     });
+
+    // Build per-day overflow counts for the "+N more" badges
+    const overflowByDay = {};
+    for (let i = 0; i < 7; i++) {
+      const dayKey = toKey(addDays(weekStart, i));
+      const hidden = mapped.filter(s => s.lane >= MAX_VISIBLE_LANES && s.start <= dayKey && s.end >= dayKey);
+      if (hidden.length) overflowByDay[i] = hidden.length;
+    }
+
+    return { segments: mapped.filter(s => s.lane < MAX_VISIBLE_LANES), overflowByDay };
   }
 
   function formatDate(date, full = false) {
@@ -128,6 +145,18 @@
     selected = new Date(today);
   }
 
+  // Count events on a given date key for the mobile strip dots
+  function eventCountOn(date) {
+    const key = toKey(date);
+    return items.filter(item => item.start <= key && item.end >= key).length;
+  }
+
+  onMount(() => {
+    const mq = window.matchMedia('(max-width: 620px)');
+    isMobile = mq.matches;
+    mq.addEventListener('change', e => { isMobile = e.matches; });
+  });
+
   function safeUrl(value) {
     try {
       const url = new URL(value);
@@ -146,16 +175,18 @@
     <h3>{period.label}</h3>
   </div>
   <div class="calendar-toolbar-actions">
+    {#if !isMobile}
     <div class="mode-controls" aria-label="Calendar period">
-      <button class:active={mode === 'month'} onclick={() => setMode('month')} aria-pressed={mode === 'month'}>Month</button>
-      <button class:active={mode === 'week'} onclick={() => setMode('week')} aria-pressed={mode === 'week'}>Week</button>
+        <button class:active={mode === 'month'} onclick={() => setMode('month')} aria-pressed={mode === 'month'}>Month</button>
+        <button class:active={mode === 'week'} onclick={() => setMode('week')} aria-pressed={mode === 'week'}>Week</button>
     </div>
     <nav class="subscription-actions" aria-label="Subscribe to the full calendar">
       <span>Subscribe</span>
       <a href={googleSubscriptionUrl} target="_blank" rel="noreferrer">Google</a>
       <a href={appleSubscriptionUrl}>Apple</a>
     </nav>
-  </div>
+    </div>
+  {/if}
 </div>
 
 <div class="legend" aria-label="Calendar legend">
@@ -163,41 +194,76 @@
   <span><i class="registration"></i>Registration</span><span><i class="deadline"></i>Deadline</span>
 </div>
 
-<div class="calendar-scroll">
-  <div class="calendar-canvas">
-    <div class="weekdays">
-      {#each ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as day}<span>{day}</span>{/each}
-    </div>
-    {#each weeks as weekStart}
-      {@const segments = weekData(weekStart)}
-      {@const laneCount = Math.max(1, ...segments.map(item => item.lane + 1))}
-      <div class="calendar-week" style={`grid-template-rows: 2.4rem repeat(${laneCount}, 1.8rem) .6rem`}>
-        {#each Array(7) as _, index}
-          {@const date = addDays(weekStart, index)}
-          <button
-            class:outside={mode === 'month' && date.getMonth() !== cursor.getMonth()}
-            class:today={toKey(date) === toKey(today)}
-            class:selected={toKey(date) === selectedKey}
-            class="calendar-day"
-            style={`grid-column: ${index + 1}; grid-row: 1 / -1`}
-            onclick={() => selectDate(date)}
-            aria-label={`Show activities for ${formatDate(date, true)}`}
-          ><span>{date.getDate()}</span></button>
-        {/each}
-        {#each segments as item (item.id)}
-          <button
-            class:continues-left={item.continuesLeft}
-            class:continues-right={item.continuesRight}
-            class={`calendar-entry ${item.kind}`}
-            style={`grid-column: ${item.column} / span ${item.span}; grid-row: ${item.lane + 2}`}
-            onclick={() => selectDate(parseDate(item.start < toKey(weekStart) ? toKey(weekStart) : item.start))}
-            title={`${item.displayLabel}: ${item.event.title}`}
-          >{item.displayLabel}: {item.event.title}</button>
-        {/each}
-      </div>
+{#if isMobile}
+  <!-- Mobile: compact week date-strip -->
+  <div class="date-strip" role="group" aria-label="Select a day">
+    {#each weekDays as date}
+      {@const count = eventCountOn(date)}
+      <button
+        class="strip-day"
+        class:today={toKey(date) === toKey(today)}
+        class:selected={toKey(date) === selectedKey}
+        onclick={() => selectDate(date)}
+        aria-label={`Show activities for ${formatDate(date, true)}`}
+        aria-pressed={toKey(date) === selectedKey}
+      >
+        <span class="strip-weekday">{new Intl.DateTimeFormat('en-GB', { weekday: 'narrow' }).format(date)}</span>
+        <span class="strip-date">{date.getDate()}</span>
+        {#if count > 0}<span class="strip-dot" aria-hidden="true"></span>{/if}
+      </button>
     {/each}
   </div>
-</div>
+{:else}
+  <!-- Desktop/tablet: full grid -->
+  <div class="calendar-scroll">
+    <div class="calendar-canvas">
+      <div class="weekdays">
+        {#each ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as day}<span>{day}</span>{/each}
+      </div>
+      {#each weeks as weekStart}
+        {@const wd = weekData(weekStart)}
+        {@const segments = wd.segments}
+        {@const overflowByDay = wd.overflowByDay}
+        {@const laneCount = Math.min(MAX_VISIBLE_LANES, Math.max(1, ...segments.map(item => item.lane + 1)))}
+        <div class="calendar-week" style={`grid-template-rows: 2.4rem repeat(${laneCount}, 1.75rem) 1.1rem`}>
+          {#each Array(7) as _, index}
+            {@const date = addDays(weekStart, index)}
+            <button
+              class:outside={mode === 'month' && date.getMonth() !== cursor.getMonth()}
+              class:today={toKey(date) === toKey(today)}
+              class:selected={toKey(date) === selectedKey}
+              class:has-overflow={!!overflowByDay[index]}
+              class="calendar-day"
+              style={`grid-column: ${index + 1}; grid-row: 1 / -1`}
+              onclick={() => selectDate(date)}
+              aria-label={`Show activities for ${formatDate(date, true)}`}
+            >
+              <span>{date.getDate()}</span>
+            </button>
+          {/each}
+          {#each segments as item (item.id)}
+            <button
+              class:continues-left={item.continuesLeft}
+              class:continues-right={item.continuesRight}
+              class={`calendar-entry ${item.kind}`}
+              style={`grid-column: ${item.column} / span ${item.span}; grid-row: ${item.lane + 2}`}
+              onclick={() => selectDate(parseDate(item.start < toKey(weekStart) ? toKey(weekStart) : item.start))}
+              title={`${item.displayLabel}: ${item.event.title}`}
+            >{item.displayLabel}: {item.event.title}</button>
+          {/each}
+          {#each Object.entries(overflowByDay) as [col, count]}
+            <button
+              class="overflow-badge"
+              style={`grid-column: ${Number(col) + 1}; grid-row: ${laneCount + 2}`}
+              onclick={() => selectDate(addDays(weekStart, Number(col)))}
+              title="{count} more {count === 1 ? 'event' : 'events'} — click to view"
+            >+{count} more</button>
+          {/each}
+        </div>
+      {/each}
+    </div>
+  </div>
+{/if}
 
 <section class="agenda" aria-labelledby="agenda-heading">
   <div class="agenda-heading">
