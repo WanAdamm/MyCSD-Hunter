@@ -1,7 +1,8 @@
-<script>
+﻿<script>
   import { onMount } from "svelte";
   import EventCard from "./lib/EventCard.svelte";
   import EventCalendar from "./lib/EventCalendar.svelte";
+  import { translations } from "./lib/i18n.js";
 
   let events = $state([]);
   let loading = $state(true);
@@ -11,7 +12,10 @@
   let mycsdOnly = $state(false);
   let feeFilter = $state("all");
   let activeView = $state("list");
+  let lang = $state("en");
   const baseUrl = import.meta.env.BASE_URL;
+
+  const t = $derived(translations[lang]);
 
   const PAGE_SIZE = 20;
   let currentPage = $state(1);
@@ -34,7 +38,9 @@
       );
     }),
   );
-  const totalPages = $derived(Math.max(1, Math.ceil(filteredEvents.length / PAGE_SIZE)));
+  const totalPages = $derived(
+    Math.max(1, Math.ceil(filteredEvents.length / PAGE_SIZE)),
+  );
   const activePage = $derived(Math.min(currentPage, totalPages));
   const displayedEvents = $derived(
     filteredEvents.slice((activePage - 1) * PAGE_SIZE, activePage * PAGE_SIZE),
@@ -52,8 +58,7 @@
         throw new Error(`Request failed with status ${response.status}`);
       events = await response.json();
     } catch (requestError) {
-      error =
-        "Events could not be loaded. Refresh the page or try again later.";
+      error = "Events could not be loaded. Refresh the page or try again later.";
       console.error(requestError);
     } finally {
       loading = false;
@@ -67,6 +72,10 @@
     feeFilter = "all";
     currentPage = 1;
   }
+
+  function toggleLang() {
+    lang = lang === "en" ? "ms" : "en";
+  }
 </script>
 
 <svelte:head>
@@ -74,28 +83,27 @@
 </svelte:head>
 
 <header class="site-header">
-  <nav class="nav-shell" aria-label="Main navigation">
-    <a class="brand" href={baseUrl} aria-label="MyCSD Hunter home">
-      <span class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none"
-          ><path d="M4 8.5 12 4l8 4.5-8 4.5-8-4.5Z" /><path
-            d="M7 11v4.5c2.8 2 7.2 2 10 0V11M20 9v6"
-          /></svg
-        >
-      </span>
+  <nav class="nav-shell" aria-label={t.navLabel}>
+    <a class="brand" href={baseUrl} aria-label={t.brandLabel}>
+      <img
+        class="brand-crest"
+        src={baseUrl + 'assets/usm-crest.webp'}
+        alt="Jata USM"
+      />
       <span>MyCSD Hunter</span>
     </a>
 
-    <span class="source-label">Sourced from @mycsd</span>
+    <div class="nav-right">
+      <span class="source-label">{t.sourceLabel}</span>
+      <button class="lang-toggle" onclick={toggleLang} aria-label="Toggle language">
+        {t.langToggle}
+      </button>
+    </div>
   </nav>
   <div class="hero">
-    <p class="eyebrow">USM opportunity radar</p>
-    <h1>Find the work that<br /><em>earns your place.</em></h1>
-    <p class="hero-copy">
-      Campus programmes, recruitment calls, and activities with MyCSD
-      opportunities, extracted from the channel and arranged around your
-      calendar.
-    </p>
+    <p class="eyebrow">{t.eyebrow}</p>
+    <h1>{t.heroH1a}<br /><em>{t.heroH1b}</em></h1>
+    <p class="hero-copy">{t.heroCopy}</p>
     <div class="hero-rule" aria-hidden="true"><span></span></div>
   </div>
 </header>
@@ -103,53 +111,56 @@
 <main>
   <section class="filter-panel" aria-label="Event filters">
     <label class="search-field">
-      <span class="sr-only">Search events</span>
+      <span class="sr-only">{t.searchSrOnly}</span>
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"
         ><circle cx="11" cy="11" r="7" /><path d="m16 16 5 5" /></svg
       >
       <input
         bind:value={search}
         type="search"
-        placeholder="Search title, organizer, or details"
+        placeholder={t.searchPlaceholder}
       />
     </label>
     <label class="select-field">
-      <span class="sr-only">Filter by category</span>
+      <span class="sr-only">{t.filterByCategorySr}</span>
       <select bind:value={category}>
-        <option value="all">All categories</option>
+        <option value="all">{t.allCategories}</option>
         {#each categories as item}
           <option value={item}>{item}</option>
         {/each}
       </select>
     </label>
     <label class="select-field">
-      <span class="sr-only">Filter by fee</span>
+      <span class="sr-only">{t.filterByFeeSr}</span>
       <select bind:value={feeFilter}>
-        <option value="all">All fees</option>
-        <option value="free">Free only</option>
-        <option value="paid">Paid only</option>
+        <option value="all">{t.allFees}</option>
+        <option value="free">{t.freeOnly}</option>
+        <option value="paid">{t.paidOnly}</option>
       </select>
     </label>
     <label class="check-field">
       <input bind:checked={mycsdOnly} type="checkbox" />
-      <span>MyCSD only</span>
+      <span>{t.mycsdOnly}</span>
     </label>
   </section>
 
   <section class="dashboard" aria-labelledby="view-heading">
     <div class="dashboard-heading">
       <div>
-        <p class="section-kicker">Browse opportunities</p>
+        <p class="section-kicker">{t.browseOpportunities}</p>
         <h2 id="view-heading">
-          {activeView === "list" ? "Current listings" : "Event calendar"}
+          {activeView === "list" ? t.listingsLabel : t.calendarLabel}
         </h2>
         {#if !loading && !error}
           <p class="result-count" aria-live="polite">
             {#if activeView === "list" && filteredEvents.length > 0}
-              Showing {(activePage - 1) * PAGE_SIZE + 1}–{Math.min(activePage * PAGE_SIZE, filteredEvents.length)} of {filteredEvents.length} events
+              {t.showingOf(
+                (activePage - 1) * PAGE_SIZE + 1,
+                Math.min(activePage * PAGE_SIZE, filteredEvents.length),
+                filteredEvents.length,
+              )}
             {:else}
-              {filteredEvents.length}
-              {filteredEvents.length === 1 ? "event" : "events"} found
+              {t.eventsFound(filteredEvents.length)}
             {/if}
           </p>
         {/if}
@@ -159,13 +170,13 @@
           class:active={activeView === "list"}
           onclick={() => (activeView = "list")}
           role="tab"
-          aria-selected={activeView === "list"}>List</button
+          aria-selected={activeView === "list"}>{t.listTab}</button
         >
         <button
           class:active={activeView === "calendar"}
           onclick={() => (activeView = "calendar")}
           role="tab"
-          aria-selected={activeView === "calendar"}>Calendar</button
+          aria-selected={activeView === "calendar"}>{t.calendarTab}</button
         >
       </div>
     </div>
@@ -173,20 +184,20 @@
     {#if loading}
       <div class="status-card" aria-live="polite">
         <span class="loader" aria-hidden="true"></span>
-        <h3>Reading the opportunity board</h3>
-        <p>Loading extracted events and calendar entries.</p>
+        <h3>{t.loadingTitle}</h3>
+        <p>{t.loadingText}</p>
       </div>
     {:else if error}
       <div class="status-card error" role="alert">
-        <h3>Events are unavailable</h3>
+        <h3>{t.errorTitle}</h3>
         <p>{error}</p>
-        <button onclick={() => location.reload()}>Try again</button>
+        <button onclick={() => location.reload()}>{t.tryAgain}</button>
       </div>
     {:else if filteredEvents.length === 0}
       <div class="status-card">
-        <h3>No matching events</h3>
-        <p>Try a broader search or remove one of the filters.</p>
-        <button onclick={clearFilters}>Clear filters</button>
+        <h3>{t.noEventsTitle}</h3>
+        <p>{t.noEventsText}</p>
+        <button onclick={clearFilters}>{t.clearFilters}</button>
       </div>
     {:else if activeView === "list"}
       <div class="list-view-container" role="tabpanel" aria-label="Event list">
@@ -203,7 +214,7 @@
               onclick={() => goToPage(activePage - 1)}
               aria-label="Previous page"
             >
-              &larr; Prev
+              {t.prevPage}
             </button>
             <div class="page-numbers">
               {#each Array.from({ length: totalPages }, (_, i) => i + 1) as page}
@@ -211,7 +222,7 @@
                   class="page-btn num-btn"
                   class:active={page === activePage}
                   onclick={() => goToPage(page)}
-                  aria-label={`Page ${page}`}
+                  aria-label={t.pageLabel(page)}
                   aria-current={page === activePage ? "page" : undefined}
                 >
                   {page}
@@ -224,14 +235,14 @@
               onclick={() => goToPage(activePage + 1)}
               aria-label="Next page"
             >
-              Next &rarr;
+              {t.nextPage}
             </button>
           </nav>
         {/if}
       </div>
     {:else}
       <div role="tabpanel" aria-label="Event calendar">
-        <EventCalendar events={filteredEvents} />
+        <EventCalendar events={filteredEvents} {lang} />
       </div>
     {/if}
   </section>
@@ -240,9 +251,9 @@
 <footer>
   <div>
     <a class="brand footer-brand" href={baseUrl}>MyCSD Hunter</a>
-    <p>Built for Universiti Sains Malaysia students.</p>
+    <p>{t.footerTagline}</p>
   </div>
   <a href="https://t.me/mycsd" target="_blank" rel="noreferrer"
-    >Open Telegram channel</a
+    >{t.openTelegram}</a
   >
 </footer>
