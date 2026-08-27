@@ -17,7 +17,7 @@
 
   const t = $derived(translations[lang]);
 
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = 12;
   let currentPage = $state(1);
 
   const categories = $derived(
