@@ -10,9 +10,6 @@ skills-lock.json
 # Dependencies and generated builds
 node_modules/
 dist/
-public/events.json
-public/calendar.ics
-public/assets/
 
 # Local database files
 data/*.sqlite*
