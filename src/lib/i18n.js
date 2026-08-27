@@ -51,7 +51,7 @@ export const translations = {
     weekdays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     locale: 'en-GB',
     moreEvents: (n) => `+${n} more`,
-    feeNotStated: 'Fee not stated',
+    feeNotStated: '-',
     free: 'Free',
   },
   ms: {
@@ -106,7 +106,7 @@ export const translations = {
     weekdays: ['Isn', 'Sel', 'Rab', 'Kha', 'Jum', 'Sab', 'Ahd'],
     locale: 'ms-MY',
     moreEvents: (n) => `+${n} lagi`,
-    feeNotStated: 'Yuran tidak dinyatakan',
+    feeNotStated: '-',
     free: 'Percuma',
   },
 };
