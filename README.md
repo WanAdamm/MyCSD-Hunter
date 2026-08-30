@@ -15,6 +15,8 @@ npm run dev
 
 Open `http://localhost:5173`. The development command regenerates `public/events.json` before starting Vite, so no backend is required.
 
+The searchable Main Campus directory is available at `/map/`. Its interactive markers use the official guide at `public/assets/usm-main-campus-map.webp` as their background artwork.
+
 ## GitHub Pages
 
 The workflow in `.github/workflows/deploy-pages.yml` tests the parser, generates the event JSON, builds the Svelte app with the `/MyCSD-Hunter/` base path, and deploys `dist/` whenever `main` is pushed.
