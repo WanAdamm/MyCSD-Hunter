@@ -197,53 +197,6 @@
           {/each}
         </div>
       </div>
-
-      {#if selected}
-        <div
-          class="map-place-card"
-          style:--zone-color={campusZones[selected.zone].color}
-          role="region"
-          aria-label={selected.name}
-        >
-          <button
-            class="card-close"
-            onclick={() => (selected = null)}
-            aria-label={t.closeCard}
-          >&times;</button>
-          <div class="card-meta">
-            <span class="card-badge" style:background={campusZones[selected.zone].color}>{selected.code}</span>
-            <span class="card-zone">{t.zoneLabel} {selected.zone} &bull; {campusZones[selected.zone].name}</span>
-          </div>
-          <h3 class="card-name">{selected.name}</h3>
-          {#if selected.aliases}
-            <p class="card-aliases">{selected.aliases}</p>
-          {/if}
-          <div class="card-coords">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-            <span class="coords-label">{t.coordinatesLabel}:</span>
-            <span class="coords-value">{selected.lat.toFixed(6)}, {selected.lng.toFixed(6)}</span>
-          </div>
-          <a
-            class="card-gmaps-link"
-            href={getGoogleMapsUrl(selected)}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-            </svg>
-            <span>{t.openInGoogleMaps}</span>
-            <svg class="external-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-              <polyline points="15 3 21 3 21 9"/>
-              <line x1="10" y1="14" x2="21" y2="3"/>
-            </svg>
-          </a>
-        </div>
-      {/if}
     </section>
   </div>
 </main>
