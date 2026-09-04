@@ -428,13 +428,72 @@
 .map-marker:hover,
 .map-marker:focus-visible,
 .map-marker.selected {
-  z-index: 5;
+  z-index: 15;
   transform: translate(-50%, -100%) scale(1.28);
 }
 
 .map-marker.selected {
   outline: 3px solid var(--orange);
   outline-offset: 2px;
+  animation: markerPulse 1.8s infinite;
+}
+
+.marker-bubble {
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  max-width: 14rem;
+  padding: .3rem .6rem;
+  border-radius: .45rem;
+  color: white;
+  background: var(--ink);
+  box-shadow: 0 4px 14px rgb(20 10 35 / .38);
+  font-size: .68rem;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  animation: bubblePop 160ms ease-out;
+  z-index: 25;
+}
+
+.marker-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 5px 5px 0;
+  border-style: solid;
+  border-color: var(--ink) transparent transparent;
+}
+
+@keyframes markerPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(230, 81, 0, .7), 0 2px 7px rgb(20 10 30 / .34);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(230, 81, 0, 0), 0 2px 7px rgb(20 10 30 / .34);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(230, 81, 0, 0), 0 2px 7px rgb(20 10 30 / .34);
+  }
+}
+
+@keyframes bubblePop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 4px) scale(.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
 }
 
 .map-marker.dimmed {

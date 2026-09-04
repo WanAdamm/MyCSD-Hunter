@@ -43,9 +43,9 @@
         behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
       });
     }
-    if (fromMarker && typeof window !== 'undefined' && window.innerWidth <= 800) {
-      const card = document.querySelector('.selected-place');
-      card?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (!fromMarker && typeof window !== 'undefined' && window.innerWidth <= 800) {
+      const mapPanel = document.querySelector('.map-panel');
+      mapPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }
 
@@ -206,8 +206,14 @@
               data-code={place.code}
               onclick={() => selectPlace(place, true, true)}
               aria-label={`${place.code}: ${getPlaceName(place, lang)}`}
-              aria-pressed={selected?.code === place.code}
-            >{place.code}</button>
+            >
+              <span>{place.code}</span>
+              {#if selected?.code === place.code}
+                <span class="marker-bubble">
+                  {getPlaceName(place, lang)}
+                </span>
+              {/if}
+            </button>
           {/each}
         </div>
       </div>
