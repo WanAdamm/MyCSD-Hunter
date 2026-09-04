@@ -159,6 +159,6 @@ export const campusLocations = [
   location('M01', "Restu Students' Residence", 'Desasiswa Restu', 4.4, 51.7, 'Desasiswa Restu RST Hostel'),
   location('M03', "Saujana Students' Residence", 'Desasiswa Saujana', 5.9, 53.9, 'Desasiswa Saujana RST Hostel'),
   location('M05', "Tekun Students' Residence", 'Desasiswa Tekun', 12.4, 58.7, 'Desasiswa Tekun RST Hostel'),
-  location('M08', 'Main Residence Hall (Restu)', 'Dewan Utama Desasiswa Restu', 8.9, 49.5, 'Dewan Restu RST'),
+  location('M08', 'Main Residence Hall', 'Dewan Utama Desasiswa', 8.9, 49.5, 'Dewan RST'),
   location('M10', "Entrance Restu, Saujana and Tekun Students' Residence", 'Pintu Masuk Desasiswa Restu, Saujana dan Tekun', 7.8, 67.0, 'Entrance RST Pintu Masuk RST'),
 ];
