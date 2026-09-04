@@ -139,6 +139,7 @@
 }
 
 .selected-place {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: .75rem;
@@ -149,11 +150,36 @@
   background: var(--purple-pale);
 }
 
+.selected-place-close {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--muted);
+  background: transparent;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 120ms, background 120ms;
+}
+
+.selected-place-close:hover {
+  color: var(--ink);
+  background: rgba(0, 0, 0, .06);
+}
+
 .selected-place-body {
   display: grid;
   grid-template-columns: 3.2rem 1fr;
   gap: .65rem;
   align-items: start;
+  padding-right: 1.35rem;
 }
 
 .selected-place-badge {
@@ -393,6 +419,12 @@
   transition: opacity 140ms, transform 140ms;
 }
 
+.map-marker::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
 .map-marker:hover,
 .map-marker:focus-visible,
 .map-marker.selected {
@@ -435,49 +467,126 @@
 
   .map-intro {
     display: block;
-    padding: 2.2rem 1rem 2.5rem;
+    padding: 1.25rem 1rem 1.4rem;
   }
 
   .map-intro .eyebrow {
-    margin-bottom: .75rem;
+    margin-bottom: .45rem;
+  }
+
+  .map-intro h1 {
+    font-size: clamp(1.85rem, 6.5vw, 2.75rem);
+    line-height: 1.05;
   }
 
   .map-intro>p:last-child {
-    margin-top: 1rem;
+    margin-top: .6rem;
+    font-size: .88rem;
+    line-height: 1.5;
   }
 
   .map-page {
-    padding: 1rem 0 3rem;
+    padding: .5rem 0 2rem;
   }
 
   .map-workspace {
     display: flex;
+    min-height: auto;
     border-right: 0;
     border-left: 0;
     border-radius: 0;
+    box-shadow: none;
     flex-direction: column-reverse;
   }
 
-  .place-directory {
-    min-height: 34rem;
-    border-top: 1px solid var(--line);
-    border-right: 0;
-  }
-
-  .place-list {
-    max-height: 25rem;
+  .map-panel {
+    border-bottom: 1px solid var(--line);
   }
 
   .map-toolbar {
-    align-items: flex-start;
-    flex-direction: column;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 3rem;
+    padding: .5rem .85rem;
+    flex-direction: row;
+    gap: .5rem;
+  }
+
+  .map-toolbar strong {
+    font-size: .88rem;
+  }
+
+  .map-toolbar span {
+    display: none;
+  }
+
+  .zoom-controls button,
+  .zoom-controls output {
+    min-width: 2rem;
+    height: 2rem;
+    font-size: .78rem;
+  }
+
+  .zoom-controls .reset-map {
+    padding: 0 .55rem;
+    font-size: .75rem;
   }
 
   .map-viewport {
-    min-height: 25rem;
-    max-height: 65vh;
+    height: 50vh;
+    min-height: 18rem;
+    max-height: 27rem;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-x pan-y;
   }
 
+  .place-directory {
+    min-height: auto;
+    padding: .85rem;
+    border-top: 0;
+    border-right: 0;
+  }
+
+  .selected-place {
+    order: -1;
+    margin-bottom: .85rem;
+  }
+
+  .zone-filter {
+    display: flex;
+    overflow-x: auto;
+    gap: .35rem;
+    margin: .6rem 0 .75rem;
+    padding: .15rem 0 .4rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-inline: contain;
+  }
+
+  .zone-filter::-webkit-scrollbar {
+    display: none;
+  }
+
+  .zone-filter button {
+    flex: 0 0 auto;
+    min-width: 2.35rem;
+    height: 2.15rem;
+    padding: 0 .6rem;
+    border-radius: .5rem;
+    font-size: .75rem;
+    white-space: nowrap;
+  }
+
+  .place-list {
+    max-height: 26rem;
+  }
+
+  .place-list button {
+    padding: .75rem .6rem;
+    font-size: .78rem;
+  }
 }
 
 @media (max-width: 420px) {
@@ -485,15 +594,21 @@
     font-size: .92rem;
   }
 
-  .map-toolbar>div:first-child {
-    display: none;
+  .map-toolbar strong {
+    font-size: .82rem;
   }
 
-  .zoom-controls {
-    width: 100%;
+  .zoom-controls output {
+    min-width: 1.85rem;
+    font-size: .72rem;
+  }
+
+  .zoom-controls button {
+    min-width: 1.85rem;
+    height: 1.85rem;
   }
 
   .zoom-controls .reset-map {
-    margin-left: auto;
+    padding: 0 .45rem;
   }
 }

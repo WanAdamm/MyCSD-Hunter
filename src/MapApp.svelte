@@ -25,7 +25,7 @@
     if (place) selectPlace(place, false);
   });
 
-  async function selectPlace(place, updateUrl = true) {
+  async function selectPlace(place, updateUrl = true, fromMarker = false) {
     selected = place;
     activeZone = place.zone;
     if (updateUrl) {
@@ -35,13 +35,18 @@
     }
     await tick();
     const marker = mapViewport?.querySelector(`[data-code="${place.code}"]`);
-    if (!marker) return;
-    marker.focus({ preventScroll: true });
-    mapViewport?.scrollTo({
-      left: marker.offsetLeft - mapViewport.clientWidth / 2,
-      top: marker.offsetTop - mapViewport.clientHeight / 2,
-      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-    });
+    if (marker) {
+      marker.focus({ preventScroll: true });
+      mapViewport?.scrollTo({
+        left: marker.offsetLeft - mapViewport.clientWidth / 2,
+        top: marker.offsetTop - mapViewport.clientHeight / 2,
+        behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      });
+    }
+    if (fromMarker && typeof window !== 'undefined' && window.innerWidth <= 800) {
+      const card = document.querySelector('.selected-place');
+      card?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   }
 
   async function setZoom(nextZoom) {
@@ -109,6 +114,11 @@
 
       {#if selected}
         <section class="selected-place" style:--zone-color={campusZones[selected.zone].color} aria-live="polite">
+          <button
+            class="selected-place-close"
+            onclick={() => (selected = null)}
+            aria-label={t.closeCard}
+          >&times;</button>
           <div class="selected-place-body">
             <div class="selected-place-badge">
               <span>{t.zoneLabel} {selected.zone}</span>
@@ -194,7 +204,7 @@
               style:top={`${place.y}%`}
               style:--zone-color={campusZones[place.zone].color}
               data-code={place.code}
-              onclick={() => selectPlace(place)}
+              onclick={() => selectPlace(place, true, true)}
               aria-label={`${place.code}: ${getPlaceName(place, lang)}`}
               aria-pressed={selected?.code === place.code}
             >{place.code}</button>
