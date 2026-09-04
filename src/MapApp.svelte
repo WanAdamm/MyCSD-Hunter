@@ -1,6 +1,6 @@
 <script>
   import { onMount, tick } from 'svelte';
-  import { campusLocations, campusZones, getGoogleMapsUrl } from './lib/campusLocations.js';
+  import { campusLocations, campusZones, getGoogleMapsUrl, getPlaceName, getZoneName } from './lib/campusLocations.js';
   import { translations } from './lib/i18n.js';
 
   const baseUrl = import.meta.env.BASE_URL;
@@ -15,7 +15,7 @@
   const t = $derived(translations[lang]);
   const filteredLocations = $derived(campusLocations.filter((place) => {
     const query = search.trim().toLowerCase();
-    const matchesSearch = `${place.code} ${place.name} ${place.aliases}`.toLowerCase().includes(query);
+    const matchesSearch = `${place.code} ${place.name} ${place.nameMs || ''} ${place.aliases}`.toLowerCase().includes(query);
     return matchesSearch && (activeZone === 'all' || place.zone === activeZone);
   }));
 
@@ -102,7 +102,7 @@
             class:active={activeZone === code}
             style:--zone-color={zone.color}
             onclick={() => (activeZone = code)}
-            aria-label={`${t.zoneLabel} ${code}: ${zone.name}`}
+            aria-label={`${t.zoneLabel} ${code}: ${getZoneName(code, lang)}`}
           >{code}</button>
         {/each}
       </div>
@@ -115,7 +115,12 @@
               <strong>{selected.code}</strong>
             </div>
             <div class="selected-place-details">
-              <h2>{selected.name}</h2>
+              <h2>{getPlaceName(selected, lang)}</h2>
+              {#if lang === 'ms' && selected.name !== selected.nameMs}
+                <p class="selected-secondary-name">{selected.name}</p>
+              {:else if lang === 'en' && selected.nameMs && selected.name !== selected.nameMs}
+                <p class="selected-secondary-name">{selected.nameMs}</p>
+              {/if}
               <div class="selected-coords">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                   <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/>
@@ -145,7 +150,7 @@
         {#each filteredLocations as place (place.code)}
           <button class:selected={selected?.code === place.code} onclick={() => selectPlace(place)}>
             <span style:background={campusZones[place.zone].color}>{place.code}</span>
-            <span>{place.name}<small>{t.zoneLabel} {place.zone}</small></span>
+            <span>{getPlaceName(place, lang)}<small>{t.zoneLabel} {place.zone} &bull; {getZoneName(place.zone, lang)}</small></span>
           </button>
         {:else}
           <p class="no-places">{t.noPlaces}</p>
@@ -190,7 +195,7 @@
               style:--zone-color={campusZones[place.zone].color}
               data-code={place.code}
               onclick={() => selectPlace(place)}
-              aria-label={`${place.code}: ${place.name}`}
+              aria-label={`${place.code}: ${getPlaceName(place, lang)}`}
               aria-pressed={selected?.code === place.code}
             >{place.code}</button>
           {/each}

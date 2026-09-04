@@ -182,6 +182,14 @@
   line-height: 1.25;
 }
 
+.selected-secondary-name {
+  margin: .2rem 0 0;
+  color: var(--muted);
+  font-size: .74rem;
+  font-style: italic;
+  line-height: 1.25;
+}
+
 .selected-coords {
   display: flex;
   align-items: center;
