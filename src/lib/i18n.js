@@ -82,6 +82,9 @@ export const translations = {
     mapMissingTitle: 'Campus artwork needed',
     mapMissingText: 'Add the official map as public/assets/usm-main-campus-map.webp.',
     backToEvents: 'Back to events',
+    openInGoogleMaps: 'Open in Google Maps',
+    coordinatesLabel: 'Coordinates',
+    closeCard: 'Close place details',
   },
   ms: {
     navLabel: 'Navigasi utama',
@@ -166,5 +169,8 @@ export const translations = {
     mapMissingTitle: 'Imej peta diperlukan',
     mapMissingText: 'Tambahkan peta rasmi sebagai public/assets/usm-main-campus-map.webp.',
     backToEvents: 'Kembali ke acara',
+    openInGoogleMaps: 'Buka dalam Google Maps',
+    coordinatesLabel: 'Koordinat',
+    closeCard: 'Tutup butiran tempat',
   },
 };

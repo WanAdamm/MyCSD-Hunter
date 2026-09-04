@@ -13,14 +13,35 @@ export const campusZones = {
   M: { name: 'Restu, Saujana & Tekun', color: '#c53084' },
 };
 
-const location = (code, name, x, y, aliases = '') => ({
-  code,
-  name,
-  zone: code[0],
-  x,
-  y,
-  aliases,
-});
+// Affine transformation mapping map percentages (x, y) to real-world GPS coordinates
+// Derived from surveyed USM campus landmarks (MGTF B01, DTSP G01, Stadium K14)
+export const toCoordinates = (x, y) => {
+  const lat = 5.363412 + 0.0000105 * x - 0.00014045 * y;
+  const lng = 100.286899 + 0.00025023 * x + 0.00000707 * y;
+  return {
+    lat: Number(lat.toFixed(6)),
+    lng: Number(lng.toFixed(6)),
+  };
+};
+
+export const getGoogleMapsUrl = (place) => {
+  if (!place || typeof place.lat !== 'number' || typeof place.lng !== 'number') return '#';
+  return `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
+};
+
+const location = (code, name, x, y, aliases = '') => {
+  const coords = toCoordinates(x, y);
+  return {
+    code,
+    name,
+    zone: code[0],
+    x,
+    y,
+    aliases,
+    lat: coords.lat,
+    lng: coords.lng,
+  };
+};
 
 // Coordinates are percentages of the official 1919 x 1357 campus guide.
 export const campusLocations = [
