@@ -94,6 +94,10 @@
     </a>
 
     <div class="nav-right">
+      <div class="site-nav-links">
+        <a class="active" href={baseUrl} aria-current="page">{t.eventsNav}</a>
+        <a href={baseUrl + 'map/'}>{t.mapNav}</a>
+      </div>
       <span class="source-label">{t.sourceLabel}</span>
       <button class="lang-toggle" onclick={toggleLang} aria-label="Toggle language">
         {t.langToggle}
