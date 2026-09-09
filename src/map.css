@@ -66,7 +66,7 @@
 .map-workspace {
   display: grid;
   grid-template-columns: 21rem minmax(0, 1fr);
-  min-height: 44rem;
+  height: 46rem;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 1rem;
@@ -76,7 +76,9 @@
 
 .place-directory {
   display: flex;
+  height: 100%;
   min-height: 0;
+  overflow: hidden;
   flex-direction: column;
   padding: 1rem;
   border-right: 1px solid var(--line);
@@ -138,10 +140,22 @@
   background: var(--zone-color, var(--purple));
 }
 
+.zone-filter.disabled {
+  opacity: .5;
+  transition: opacity 160ms ease;
+}
+
+.zone-filter button:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+  border-bottom-color: var(--line);
+}
+
 .selected-place {
   position: relative;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   gap: .75rem;
   margin-bottom: .8rem;
   padding: .85rem .9rem;
@@ -243,6 +257,7 @@
 
 .directory-heading {
   display: flex;
+  flex-shrink: 0;
   justify-content: space-between;
   padding: .2rem .25rem .65rem;
   color: var(--muted);
@@ -256,6 +271,7 @@
 }
 
 .place-list {
+  flex: 1 1 0;
   min-height: 0;
   overflow-y: auto;
   scrollbar-color: #cfc5d8 transparent;
@@ -310,13 +326,16 @@
 .map-panel {
   position: relative;
   display: grid;
+  height: 100%;
   min-width: 0;
   min-height: 0;
   grid-template-rows: auto 1fr;
+  overflow: hidden;
 }
 
 .map-toolbar {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
@@ -375,7 +394,8 @@
 }
 
 .map-viewport {
-  min-height: 38rem;
+  height: 100%;
+  min-height: 0;
   overflow: auto;
   overscroll-behavior: contain;
   background-color: #eae7ed;
@@ -593,16 +613,18 @@
   }
 
   .map-viewport {
-    height: 50vh;
-    min-height: 18rem;
-    max-height: 27rem;
+    height: 22rem;
+    min-height: 22rem;
+    max-height: 22rem;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     touch-action: pan-x pan-y;
   }
 
   .place-directory {
+    height: auto;
     min-height: auto;
+    overflow: visible;
     padding: .85rem;
     border-top: 0;
     border-right: 0;
@@ -639,7 +661,9 @@
   }
 
   .place-list {
-    max-height: 26rem;
+    height: 22rem;
+    max-height: 22rem;
+    flex: none;
   }
 
   .place-list button {

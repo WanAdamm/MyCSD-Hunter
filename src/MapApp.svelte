@@ -13,11 +13,13 @@
   let mapViewport;
   let mapAvailable = $state(true);
   const t = $derived(translations[lang]);
+  const isSearching = $derived(search.trim().length > 0);
   const filteredLocations = $derived(campusLocations.filter((place) => {
     const query = search.trim().toLowerCase();
     const matchesSearch = `${place.code} ${place.name} ${place.nameMs || ''} ${place.aliases}`.toLowerCase().includes(query);
-    return matchesSearch && (activeZone === 'all' || place.zone === activeZone);
+    return matchesSearch && (isSearching || activeZone === 'all' || place.zone === activeZone);
   }));
+  const matchingCodes = $derived(new Set(filteredLocations.map((p) => p.code)));
 
   onMount(() => {
     const code = new URLSearchParams(location.search).get('place')?.toUpperCase();
@@ -100,12 +102,17 @@
         <input bind:value={search} type="search" placeholder={t.mapSearchPlaceholder} />
       </label>
 
-      <div class="zone-filter" aria-label={t.zoneFilterLabel}>
-        <button class:active={activeZone === 'all'} onclick={() => (activeZone = 'all')}>{t.allZones}</button>
+      <div class="zone-filter" class:disabled={isSearching} aria-label={t.zoneFilterLabel}>
+        <button
+          class:active={!isSearching && activeZone === 'all'}
+          disabled={isSearching}
+          onclick={() => (activeZone = 'all')}
+        >{t.allZones}</button>
         {#each zoneEntries as [code, zone]}
           <button
-            class:active={activeZone === code}
+            class:active={!isSearching && activeZone === code}
             style:--zone-color={zone.color}
+            disabled={isSearching}
             onclick={() => (activeZone = code)}
             aria-label={`${t.zoneLabel} ${code}: ${getZoneName(code, lang)}`}
           >{code}</button>
@@ -199,7 +206,7 @@
             <button
               class="map-marker"
               class:selected={selected?.code === place.code}
-              class:dimmed={activeZone !== 'all' && activeZone !== place.zone}
+              class:dimmed={isSearching ? !matchingCodes.has(place.code) : (activeZone !== 'all' && activeZone !== place.zone)}
               style:left={`${place.x}%`}
               style:top={`${place.y}%`}
               style:--zone-color={campusZones[place.zone].color}
