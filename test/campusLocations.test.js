@@ -3,7 +3,7 @@ import test from 'node:test';
 import { campusLocations, campusZones, getGoogleMapsUrl, getPlaceName, getZoneName } from '../src/lib/campusLocations.js';
 
 test('campus directory contains valid, uniquely coded map locations with GPS coordinates and bilingual names', () => {
-  assert.equal(campusLocations.length, 93);
+  assert.equal(campusLocations.length, 97);
   assert.equal(new Set(campusLocations.map(({ code }) => code)).size, campusLocations.length);
 
   for (const place of campusLocations) {
@@ -22,6 +22,16 @@ test('campus directory contains valid, uniquely coded map locations with GPS coo
   assert.equal(g01.lat, 5.3569);
   assert.equal(g01.lng, 100.3031);
   assert.equal(getGoogleMapsUrl(g01), 'https://www.google.com/maps/search/?api=1&query=5.3569,100.3031');
+
+  const l11 = campusLocations.find(p => p.code === 'L11');
+  assert.ok(l11);
+  assert.equal(l11.lat, 5.356729);
+  assert.equal(l11.lng, 100.295195);
+
+  const l12 = campusLocations.find(p => p.code === 'L12');
+  assert.ok(l12);
+  assert.equal(l12.lat, 5.357199);
+  assert.equal(l12.lng, 100.29512);
 
   assert.equal(getPlaceName(g01, 'en'), 'Tuanku Syed Putra Hall (Main Hall)');
   assert.equal(getPlaceName(g01, 'ms'), 'Dewan Tuanku Syed Putra (DTSP / Dewan Utama)');

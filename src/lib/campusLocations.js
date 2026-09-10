@@ -40,8 +40,8 @@ export const getZoneName = (zoneCode, lang = 'ms') => {
   return lang === 'ms' && zone.nameMs ? zone.nameMs : zone.name;
 };
 
-const location = (code, name, nameMs, x, y, aliases = '') => {
-  const coords = toCoordinates(x, y);
+const location = (code, name, nameMs, x, y, aliases = '', customCoords = null) => {
+  const coords = customCoords || toCoordinates(x, y);
   return {
     code,
     name,
@@ -150,7 +150,11 @@ export const campusLocations = [
   location('K22', 'Tennis Complex / Pavilion', 'Kompleks Tenis / Astaka', 21.6, 75.0, 'Gelanggang Tenis Astaka'),
 
   location('L01', 'Development Office', 'Jabatan Pembangunan & Pengurusan Fasiliti', 38.0, 57.7, 'Jabatan Pembangunan Fasiliti'),
-  location('L06', "Indah Kembara Students' Residence", 'Desasiswa Indah Kembara', 33.7, 57.6, 'Desasiswa Indah Kembara Hostel'),
+  location('L05', 'L05 Indah Kembara Cafe', 'Kafeteria L05 Indah Kembara', 31.5, 56.7, 'Surau Indah Kembara Surau Kafe Kafeteria L05'),
+  location('L06', "Block L06 and L07 Indah Kembara Students' Residence", 'Blok L06 dan L07 Desasiswa Indah Kembara', 33.7, 57.6, 'Desasiswa Indah Kembara Hostel Asrama Indah Kembara L06 L07'),
+  location('L10', 'L10 Indah Kembara Cafe', 'Kafeteria L10 Indah Kembara', 30.5, 52.7, 'Kafe Kafeteria L10 Indah Kembara'),
+  location('L11', "Block L11 Indah Kembara Students' Residence", 'Blok L11 Desasiswa Indah Kembara', 31.7, 50.0, 'Desasiswa Indah Kembara Hostel Asrama Indah Kembara L11', { lat: 5.356729, lng: 100.295195 }),
+  location('L12', "Block L12 Indah Kembara Students' Residence", 'Blok L12 Desasiswa Indah Kembara', 31.5, 46.6, 'Desasiswa Indah Kembara Hostel Asrama Indah Kembara L12', { lat: 5.357199, lng: 100.29512 }),
   location('L15', 'Animal House', 'Rumah Haiwan Makmal', 26.3, 46.5, 'Rumah Haiwan'),
   location('L17', 'Main Students Hall', 'Dewan Utama Pelajar (DUP)', 26.4, 50.1, 'DUP Dewan Utama Pelajar'),
   location('L18', 'Pelapes Complex', 'Kompleks PALAPES', 24.9, 52.1, 'PALAPES ROTU Kompleks Pelapes'),
