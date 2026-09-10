@@ -1,4 +1,4 @@
-﻿<script>
+<script>
   import { onMount } from "svelte";
   import EventCard from "./lib/EventCard.svelte";
   import EventCalendar from "./lib/EventCalendar.svelte";
@@ -12,8 +12,18 @@
   let mycsdOnly = $state(false);
   let feeFilter = $state("all");
   let activeView = $state("list");
-  let lang = $state("en");
+  const initialLang = (typeof localStorage !== "undefined" && localStorage.getItem("mycsd_lang")) || "ms";
+  let lang = $state(initialLang);
   const baseUrl = import.meta.env.BASE_URL;
+
+  $effect(() => {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem("mycsd_lang", lang);
+    }
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = lang;
+    }
+  });
 
   const t = $derived(translations[lang]);
 
@@ -79,7 +89,7 @@
 </script>
 
 <svelte:head>
-  <title>MyCSD Hunter - Discover USM Events</title>
+  <title>{t.pageTitle}</title>
 </svelte:head>
 
 <header class="site-header">
@@ -99,7 +109,7 @@
         <a href={baseUrl + 'map/'}>{t.mapNav}</a>
       </div>
       <span class="source-label">{t.sourceLabel}</span>
-      <button class="lang-toggle" onclick={toggleLang} aria-label="Toggle language">
+      <button class="lang-toggle" onclick={toggleLang} aria-label={t.toggleLanguageAria}>
         {t.langToggle}
       </button>
     </div>
@@ -113,7 +123,7 @@
 </header>
 
 <main>
-  <section class="filter-panel" aria-label="Event filters">
+  <section class="filter-panel" aria-label={t.filterPanelLabel}>
     <label class="search-field">
       <span class="sr-only">{t.searchSrOnly}</span>
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"
@@ -169,7 +179,7 @@
           </p>
         {/if}
       </div>
-      <div class="view-tabs" role="tablist" aria-label="Event view">
+      <div class="view-tabs" role="tablist" aria-label={t.viewTabsLabel}>
         <button
           class:active={activeView === "list"}
           onclick={() => (activeView = "list")}
@@ -204,19 +214,19 @@
         <button onclick={clearFilters}>{t.clearFilters}</button>
       </div>
     {:else if activeView === "list"}
-      <div class="list-view-container" role="tabpanel" aria-label="Event list">
+      <div class="list-view-container" role="tabpanel" aria-label={t.listTab}>
         <div class="event-grid">
           {#each displayedEvents as event (event.id)}
-            <EventCard {event} />
+            <EventCard {event} {lang} />
           {/each}
         </div>
         {#if totalPages > 1}
-          <nav class="pagination" aria-label="Event list pagination">
+          <nav class="pagination" aria-label={t.paginationLabel}>
             <button
               class="page-btn nav-btn"
               disabled={activePage === 1}
               onclick={() => goToPage(activePage - 1)}
-              aria-label="Previous page"
+              aria-label={t.prevPage}
             >
               {t.prevPage}
             </button>
@@ -237,7 +247,7 @@
               class="page-btn nav-btn"
               disabled={activePage === totalPages}
               onclick={() => goToPage(activePage + 1)}
-              aria-label="Next page"
+              aria-label={t.nextPage}
             >
               {t.nextPage}
             </button>
@@ -245,7 +255,7 @@
         {/if}
       </div>
     {:else}
-      <div role="tabpanel" aria-label="Event calendar">
+      <div role="tabpanel" aria-label={t.calendarLabel}>
         <EventCalendar events={filteredEvents} {lang} />
       </div>
     {/if}

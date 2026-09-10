@@ -1,7 +1,9 @@
 <script>
   import { calendarFilename, createGoogleCalendarUrl, createIcsCalendar } from './calendar.js';
+  import { translations } from './i18n.js';
 
-  let { event, schedule, index = 0, compact = false } = $props();
+  let { event, schedule, index = 0, compact = false, lang = 'ms' } = $props();
+  const t = $derived(translations[lang]);
   const googleUrl = $derived(createGoogleCalendarUrl(event, schedule));
 
   function downloadAppleCalendar() {
@@ -17,8 +19,8 @@
   }
 </script>
 
-<nav class:compact class="calendar-actions" aria-label={`Add ${event.title} to a calendar`}>
-  <span>Add to calendar</span>
+<nav class:compact class="calendar-actions" aria-label={`${t.addToCalendar}: ${event.title}`}>
+  <span>{t.addToCalendar}</span>
   <a href={googleUrl} target="_blank" rel="noreferrer">Google</a>
   <button type="button" onclick={downloadAppleCalendar}>Apple</button>
 </nav>

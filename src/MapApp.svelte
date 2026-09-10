@@ -5,7 +5,18 @@
 
   const baseUrl = import.meta.env.BASE_URL;
   const zoneEntries = Object.entries(campusZones);
-  let lang = $state('en');
+  const initialLang = (typeof localStorage !== 'undefined' && localStorage.getItem('mycsd_lang')) || 'ms';
+  let lang = $state(initialLang);
+
+  $effect(() => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('mycsd_lang', lang);
+    }
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lang;
+    }
+  });
+
   let search = $state('');
   let activeZone = $state('all');
   let selected = $state(null);
@@ -81,7 +92,7 @@
     <div class="map-nav-links">
       <a href={baseUrl}>{t.eventsNav}</a>
       <a class="active" href={baseUrl + 'map/'} aria-current="page">{t.mapNav}</a>
-      <button class="lang-toggle" onclick={() => (lang = lang === 'en' ? 'ms' : 'en')} aria-label="Toggle language">
+      <button class="lang-toggle" onclick={() => (lang = lang === 'en' ? 'ms' : 'en')} aria-label={t.toggleLanguageAria}>
         {t.langToggle}
       </button>
     </div>

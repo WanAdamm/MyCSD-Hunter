@@ -3,7 +3,7 @@
   import { translations } from './i18n.js';
 
   import { onMount, tick } from 'svelte';
-  let { events, lang = 'en' } = $props();
+  let { events, lang = 'ms' } = $props();
   const t = $derived(translations[lang]);
 
   const MAX_VISIBLE_LANES = 3;
@@ -257,19 +257,19 @@
       </button>
       <button class="mobile-today" onclick={goToday}>{t.today}</button>
     {:else}
-      <button onclick={() => movePeriod(-1)} aria-label="Previous period">&larr;</button>
+      <button onclick={() => movePeriod(-1)} aria-label={t.previousPeriod}>&larr;</button>
       <button onclick={goToday}>{t.today}</button>
-      <button onclick={() => movePeriod(1)} aria-label="Next period">&rarr;</button>
+      <button onclick={() => movePeriod(1)} aria-label={t.nextPeriod}>&rarr;</button>
       <h3>{period.label}</h3>
     {/if}
   </div>
   <div class="calendar-toolbar-actions">
     {#if !isMobile}
-    <div class="mode-controls" aria-label="Calendar period">
+    <div class="mode-controls" aria-label={t.calendarPeriodAria}>
         <button class:active={mode === 'month'} onclick={() => setMode('month')} aria-pressed={mode === 'month'}>{t.monthMode}</button>
         <button class:active={mode === 'week'} onclick={() => setMode('week')} aria-pressed={mode === 'week'}>{t.weekMode}</button>
     </div>
-    <nav class="subscription-actions" aria-label="Subscribe to the full calendar">
+    <nav class="subscription-actions" aria-label={t.subscribeAria}>
       <span>{t.subscribe}</span>
       <a href={googleSubscriptionUrl} target="_blank" rel="noreferrer">Google</a>
       <a href={appleSubscriptionUrl}>Apple</a>
@@ -322,7 +322,7 @@
   </dialog>
 {/if}
 
-<div class="legend" aria-label="Calendar legend">
+<div class="legend" aria-label={t.legendAria}>
   <span><i class="event"></i>{t.legendEvent}</span><span><i class="interview"></i>{t.legendInterview}</span>
   <span><i class="registration"></i>{t.legendRegistration}</span><span><i class="deadline"></i>{t.legendDeadline}</span>
 </div>
@@ -331,7 +331,7 @@
   <div class="calendar-main">
     {#if isMobile}
       <!-- Mobile: compact week date-strip -->
-      <div class="date-strip" role="group" aria-label="Select a day" bind:this={dateStrip} onscroll={recycleDateStrip}>
+      <div class="date-strip" role="group" aria-label={t.selectDayAria} bind:this={dateStrip} onscroll={recycleDateStrip}>
         {#each stripDays as date (toKey(date))}
           {@const count = eventCountOn(date)}
           <button
@@ -339,7 +339,7 @@
             class:today={toKey(date) === toKey(today)}
             class:selected={toKey(date) === selectedKey}
             onclick={() => selectDate(date)}
-            aria-label={`Show activities for ${formatDate(date)}`}
+            aria-label={`${t.showActivitiesFor} ${formatDate(date)}`}
             aria-pressed={toKey(date) === selectedKey}
           >
             <span class="strip-weekday">{new Intl.DateTimeFormat(t.locale, { weekday: 'narrow' }).format(date)}</span>
@@ -371,7 +371,7 @@
                   class="calendar-day"
                   style={`grid-column: ${index + 1}; grid-row: 1 / -1`}
                   onclick={() => selectDate(date)}
-                  aria-label={`Show activities for ${formatDate(date)}`}
+                  aria-label={`${t.showActivitiesFor} ${formatDate(date)}`}
                 >
                   <span>{date.getDate()}</span>
                 </button>
@@ -391,7 +391,7 @@
                   class="overflow-badge"
                   style={`grid-column: ${Number(col) + 1}; grid-row: ${laneCount + 2}`}
                   onclick={() => selectDate(addDays(weekStart, Number(col)))}
-                  title="{count} more — click to view"
+                  title={t.clickToViewMore(count)}
                 >{t.moreEvents(count)}</button>
               {/each}
             </div>

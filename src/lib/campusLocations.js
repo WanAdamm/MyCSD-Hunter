@@ -29,12 +29,12 @@ export const getGoogleMapsUrl = (place) => {
   return `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
 };
 
-export const getPlaceName = (place, lang = 'en') => {
+export const getPlaceName = (place, lang = 'ms') => {
   if (!place) return '';
   return lang === 'ms' && place.nameMs ? place.nameMs : place.name;
 };
 
-export const getZoneName = (zoneCode, lang = 'en') => {
+export const getZoneName = (zoneCode, lang = 'ms') => {
   const zone = campusZones[zoneCode];
   if (!zone) return '';
   return lang === 'ms' && zone.nameMs ? zone.nameMs : zone.name;

@@ -25,6 +25,8 @@ test('campus directory contains valid, uniquely coded map locations with GPS coo
 
   assert.equal(getPlaceName(g01, 'en'), 'Tuanku Syed Putra Hall (Main Hall)');
   assert.equal(getPlaceName(g01, 'ms'), 'Dewan Tuanku Syed Putra (DTSP / Dewan Utama)');
+  assert.equal(getPlaceName(g01), 'Dewan Tuanku Syed Putra (DTSP / Dewan Utama)');
   assert.equal(getZoneName('A', 'en'), 'Recreation');
   assert.equal(getZoneName('A', 'ms'), 'Rekreasi');
+  assert.equal(getZoneName('A'), 'Rekreasi');
 });
