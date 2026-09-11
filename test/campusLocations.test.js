@@ -23,6 +23,11 @@ test('campus directory contains valid, uniquely coded map locations with GPS coo
   assert.equal(g01.lng, 100.3031);
   assert.equal(getGoogleMapsUrl(g01), 'https://www.google.com/maps/search/?api=1&query=5.3569,100.3031');
 
+  const l10 = campusLocations.find(p => p.code === 'L10');
+  assert.ok(l10);
+  assert.equal(l10.lat, 5.356333);
+  assert.equal(l10.lng, 100.294917);
+
   const l11 = campusLocations.find(p => p.code === 'L11');
   assert.ok(l11);
   assert.equal(l11.lat, 5.356729);
