@@ -40,8 +40,84 @@ export const getZoneName = (zoneCode, lang = 'ms') => {
   return lang === 'ms' && zone.nameMs ? zone.nameMs : zone.name;
 };
 
-const location = (code, name, nameMs, x, y, aliases = '', customCoords = null) => {
+export const campusCategories = [
+  { id: 'surau', icon: 'mosque' },
+  { id: 'kafe', icon: 'utensils' },
+  { id: 'desasiswa', icon: 'residence' },
+  { id: 'pejabat', icon: 'office' },
+];
+
+export const getCategoryName = (categoryId, lang = 'ms') => {
+  const names = {
+    surau: { en: 'Surau', ms: 'Surau' },
+    kafe: { en: 'Cafe', ms: 'Kafe' },
+    desasiswa: { en: 'Hostel', ms: 'Desasiswa' },
+    pejabat: { en: 'Office', ms: 'Pejabat' },
+  };
+  return names[categoryId]?.[lang] || categoryId;
+};
+
+export const inferCategories = (code, name, nameMs, aliases = '') => {
+  const text = `${code} ${name} ${nameMs || ''} ${aliases}`.toLowerCase();
+  const cats = [];
+
+  if (
+    code === 'F02' ||
+    text.includes('surau') ||
+    text.includes('masjid') ||
+    text.includes('islamic centre') ||
+    text.includes('pusat islam')
+  ) {
+    cats.push('surau');
+  }
+
+  if (
+    code === 'A03' ||
+    code === 'L05' ||
+    code === 'L10' ||
+    text.includes('kafe') ||
+    text.includes('cafe') ||
+    text.includes('kafeteria') ||
+    text.includes('cafeteria')
+  ) {
+    cats.push('kafe');
+  }
+
+  if (
+    (text.includes('desasiswa') ||
+      text.includes("students' residence") ||
+      text.includes('student residence') ||
+      text.includes('hostel') ||
+      text.includes('family unit') ||
+      text.includes('dewan utama desasiswa')) &&
+    code !== 'B02'
+  ) {
+    cats.push('desasiswa');
+  }
+
+  if (
+    ['C02', 'C03', 'C04', 'C15', 'C18', 'C22', 'D01', 'D05', 'D18', 'H20-24', 'J06', 'L01', 'L21'].includes(code) ||
+    text.includes('pejabat') ||
+    text.includes('office') ||
+    text.includes('jabatan bendahari') ||
+    text.includes('bursary') ||
+    text.includes('chancellory') ||
+    text.includes('canselori') ||
+    text.includes('bhepa') ||
+    text.includes('jabatan pembangunan') ||
+    text.includes('jabatan keselamatan') ||
+    text.includes('pendaftar') ||
+    text.includes('registry')
+  ) {
+    cats.push('pejabat');
+  }
+
+  return cats;
+};
+
+const location = (code, name, nameMs, x, y, aliases = '', customCoords = null, categories = null) => {
   const coords = customCoords || toCoordinates(x, y);
+  const placeCategories = categories || inferCategories(code, name, nameMs, aliases);
   return {
     code,
     name,
@@ -52,6 +128,7 @@ const location = (code, name, nameMs, x, y, aliases = '', customCoords = null) =
     aliases,
     lat: coords.lat,
     lng: coords.lng,
+    categories: placeCategories,
   };
 };
 
