@@ -1,16 +1,18 @@
 <script>
   import CalendarActions from './CalendarActions.svelte';
+  import { translations } from './i18n.js';
 
-  let { event } = $props();
+  let { event, lang = 'ms' } = $props();
+  const t = $derived(translations[lang]);
   const crestUrl = `${import.meta.env.BASE_URL}assets/usm-crest.webp`;
 
-  const displayTitle = $derived(event.title || event.organization || 'Untitled event');
+  const displayTitle = $derived(event.title || event.organization || t.untitledEvent);
   const initials = $derived(displayTitle.split(/\s+/).filter(word => /^[A-Za-z0-9]/.test(word)).slice(0, 3).map(word => word[0]).join('').toUpperCase());
-  const summary = $derived(event.description?.replace(/\s+/g, ' ').slice(0, 190) || 'No description was extracted.');
+  const summary = $derived(event.description?.replace(/\s+/g, ' ').slice(0, 190) || t.noDescription);
   const primarySchedule = $derived(event.calendar_entries?.[0]);
-  const feeLabel = $derived(event.fee?.free === true ? 'Free' : event.fee?.amount || 'Fee not stated');
+  const feeLabel = $derived(event.fee?.free === true ? t.free : event.fee?.amount || t.feeNotStatedText);
   const actionUrl = $derived(safeUrl(event.registration_link) || safeUrl(event.source_url));
-  const actionLabel = $derived(safeUrl(event.registration_link) ? 'Open registration' : 'View Telegram post');
+  const actionLabel = $derived(safeUrl(event.registration_link) ? t.openRegistration : t.viewTelegramPost);
 
   function parseDate(value) {
     if (!value) return null;
@@ -20,18 +22,18 @@
 
   function formatDate(value) {
     const date = parseDate(value);
-    return date ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(date) : '';
+    return date ? new Intl.DateTimeFormat(t.locale, { day: 'numeric', month: 'short', year: 'numeric' }).format(date) : '';
   }
 
   function formatSchedule(schedule) {
-    if (!schedule) return 'Date not stated';
+    if (!schedule) return t.dateNotStated;
     if (schedule.start === schedule.end) return formatDate(schedule.start);
     return `${formatDate(schedule.start)} - ${formatDate(schedule.end)}`;
   }
 
   function formatPosted(value) {
     const date = new Date(value);
-    return Number.isNaN(date.valueOf()) ? 'Recently' : new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' }).format(date);
+    return Number.isNaN(date.valueOf()) ? t.recently : new Intl.DateTimeFormat(t.locale, { day: 'numeric', month: 'short' }).format(date);
   }
 
   function safeUrl(value) {
@@ -48,7 +50,7 @@
   <div class="card-visual">
     <img src={crestUrl} alt="" aria-hidden="true" />
     <span class="monogram" aria-hidden="true">{initials}</span>
-    <span class="posted">Posted {formatPosted(event.date_posted)}</span>
+    <span class="posted">{t.postedPrefix} {formatPosted(event.date_posted)}</span>
     {#if event.mycsd_provided}<span class="mycsd-badge">MyCSD</span>{/if}
   </div>
   <div class="card-body">
@@ -62,17 +64,17 @@
       <span class="fee-icon" class:free={event.fee?.free === true} class:paid={event.fee?.free === false} class:not-stated={event.fee?.free == null} aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2m0 4v2m0 4v2"/></svg>
       </span>
-      <span><small>Fee</small>{feeLabel}</span>
+      <span><small>{t.feeLabelHeader}</small>{feeLabel}</span>
     </div>
     <div class="schedule">
       <span class="date-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none"><path d="M7 3v4m10-4v4M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/></svg>
       </span>
-      <span><small>{primarySchedule?.label || 'Schedule'}</small>{formatSchedule(primarySchedule)}</span>
+      <span><small>{primarySchedule?.label || t.scheduleLabelHeader}</small>{formatSchedule(primarySchedule)}</span>
     </div>
   </div>
   {#if primarySchedule}
-    <CalendarActions {event} schedule={primarySchedule} />
+    <CalendarActions {event} schedule={primarySchedule} {lang} />
   {/if}
   {#if actionUrl}
     <a class="card-action" href={actionUrl} target="_blank" rel="noreferrer">

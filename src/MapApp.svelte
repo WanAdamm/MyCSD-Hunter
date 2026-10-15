@@ -1,23 +1,52 @@
 <script>
   import { onMount, tick } from 'svelte';
-  import { campusLocations, campusZones, getGoogleMapsUrl, getPlaceName, getZoneName } from './lib/campusLocations.js';
+  import {
+    campusCategories,
+    campusLocations,
+    campusZones,
+    getCategoryName,
+    getGoogleMapsUrl,
+    getPlaceName,
+    getZoneName,
+  } from './lib/campusLocations.js';
   import { translations } from './lib/i18n.js';
 
   const baseUrl = import.meta.env.BASE_URL;
   const zoneEntries = Object.entries(campusZones);
-  let lang = $state('en');
+  const initialLang = (typeof localStorage !== 'undefined' && localStorage.getItem('mycsd_lang')) || 'ms';
+  let lang = $state(initialLang);
+
+  $effect(() => {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('mycsd_lang', lang);
+    }
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = lang;
+    }
+  });
+
   let search = $state('');
   let activeZone = $state('all');
+  let activeCategory = $state(null);
   let selected = $state(null);
   let zoom = $state(1);
   let mapViewport;
   let mapAvailable = $state(true);
   const t = $derived(translations[lang]);
+  const isSearching = $derived(search.trim().length > 0);
+  const isFiltering = $derived(isSearching || activeCategory !== null || activeZone !== 'all');
   const filteredLocations = $derived(campusLocations.filter((place) => {
     const query = search.trim().toLowerCase();
     const matchesSearch = `${place.code} ${place.name} ${place.nameMs || ''} ${place.aliases}`.toLowerCase().includes(query);
-    return matchesSearch && (activeZone === 'all' || place.zone === activeZone);
+    const matchesZone = isSearching || activeZone === 'all' || place.zone === activeZone;
+    const matchesCategory = !activeCategory || (place.categories && place.categories.includes(activeCategory));
+    return matchesSearch && matchesZone && matchesCategory;
   }));
+  const matchingCodes = $derived(new Set(filteredLocations.map((p) => p.code)));
+
+  function toggleCategory(catId) {
+    activeCategory = activeCategory === catId ? null : catId;
+  }
 
   onMount(() => {
     const code = new URLSearchParams(location.search).get('place')?.toUpperCase();
@@ -79,7 +108,7 @@
     <div class="map-nav-links">
       <a href={baseUrl}>{t.eventsNav}</a>
       <a class="active" href={baseUrl + 'map/'} aria-current="page">{t.mapNav}</a>
-      <button class="lang-toggle" onclick={() => (lang = lang === 'en' ? 'ms' : 'en')} aria-label="Toggle language">
+      <button class="lang-toggle" onclick={() => (lang = lang === 'en' ? 'ms' : 'en')} aria-label={t.toggleLanguageAria}>
         {t.langToggle}
       </button>
     </div>
@@ -100,12 +129,64 @@
         <input bind:value={search} type="search" placeholder={t.mapSearchPlaceholder} />
       </label>
 
-      <div class="zone-filter" aria-label={t.zoneFilterLabel}>
-        <button class:active={activeZone === 'all'} onclick={() => (activeZone = 'all')}>{t.allZones}</button>
+      <div class="category-chips" role="toolbar" aria-label={t.categoryFilterLabel}>
+        {#each campusCategories as cat}
+          <button
+            type="button"
+            class="category-chip"
+            class:active={activeCategory === cat.id}
+            onclick={() => toggleCategory(cat.id)}
+            aria-pressed={activeCategory === cat.id}
+          >
+            <span class="chip-icon" aria-hidden="true">
+              {#if cat.icon === 'mosque'}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3v3" />
+                  <path d="M12 6a5 5 0 0 1 5 5v8H7v-8a5 5 0 0 1 5-5z" />
+                  <path d="M10 19v-4a2 2 0 0 1 4 0v4" />
+                  <path d="M4 19h16" />
+                  <path d="M4 14h3" />
+                  <path d="M17 14h3" />
+                </svg>
+              {:else if cat.icon === 'utensils'}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+                  <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+                  <line x1="6" y1="2" x2="6" y2="4" />
+                  <line x1="10" y1="2" x2="10" y2="4" />
+                  <line x1="14" y1="2" x2="14" y2="4" />
+                </svg>
+              {:else if cat.icon === 'residence'}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+              {:else if cat.icon === 'office'}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="20" height="14" x="2" y="7" rx="2" />
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                </svg>
+              {/if}
+            </span>
+            <span class="chip-label">{getCategoryName(cat.id, lang)}</span>
+            {#if activeCategory === cat.id}
+              <span class="chip-clear" aria-hidden="true">&times;</span>
+            {/if}
+          </button>
+        {/each}
+      </div>
+
+      <div class="zone-filter" class:disabled={isSearching} aria-label={t.zoneFilterLabel}>
+        <button
+          class:active={!isSearching && activeZone === 'all'}
+          disabled={isSearching}
+          onclick={() => (activeZone = 'all')}
+        >{t.allZones}</button>
         {#each zoneEntries as [code, zone]}
           <button
-            class:active={activeZone === code}
+            class:active={!isSearching && activeZone === code}
             style:--zone-color={zone.color}
+            disabled={isSearching}
             onclick={() => (activeZone = code)}
             aria-label={`${t.zoneLabel} ${code}: ${getZoneName(code, lang)}`}
           >{code}</button>
@@ -130,6 +211,13 @@
                 <p class="selected-secondary-name">{selected.name}</p>
               {:else if lang === 'en' && selected.nameMs && selected.name !== selected.nameMs}
                 <p class="selected-secondary-name">{selected.nameMs}</p>
+              {/if}
+              {#if selected.categories && selected.categories.length > 0}
+                <div class="selected-place-categories">
+                  {#each selected.categories as cat}
+                    <span class="place-cat-badge">{getCategoryName(cat, lang)}</span>
+                  {/each}
+                </div>
               {/if}
               <div class="selected-coords">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -199,7 +287,7 @@
             <button
               class="map-marker"
               class:selected={selected?.code === place.code}
-              class:dimmed={activeZone !== 'all' && activeZone !== place.zone}
+              class:dimmed={isFiltering ? !matchingCodes.has(place.code) : false}
               style:left={`${place.x}%`}
               style:top={`${place.y}%`}
               style:--zone-color={campusZones[place.zone].color}
